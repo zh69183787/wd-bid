@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       ">
+
+    <!-- 扫描注解Bean --><!-- 扫描除了@Controller的其他注解  如@Repository @service @componot -->
+    <context:component-scan base-package="com.wonders.stpt">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- ======================================================================= -->
+    <!-- = Mybaits definitions = -->
+    <!-- ======================================================================= -->
+    <bean id="pageInterceptor" class="com.wonders.stpt.bid.utils.paginator.mybatis.PageInterceptor">
+        <property name="dialectClass"
+                  value="com.wonders.stpt.bid.utils.paginator.mybatis.dialect.OracleDialect"/>
+    </bean>
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations"
+                  value="classpath:com/wonders/stpt/bid/domain/mapper/*.xml"/>
+        <property name="typeAliasesPackage" value="com.wonders.stpt.bid.domain"/>
+        <property name="plugins">
+            <array>
+                <ref bean="pageInterceptor"/>
+            </array>
+        </property>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.wonders.stpt.bid.dao"/>
+    </bean>
+
+
+    <!-- 国际化的消息资源文件 -->
+    <!--<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">-->
+    <!--<property name="basenames">-->
+    <!--<list>-->
+    <!--&lt;!&ndash; 在web环境中一定要定位到classpath 否则默认到当前web应用下找  &ndash;&gt;-->
+    <!--<value>classpath:messages</value>-->
+    <!--</list>-->
+    <!--</property>-->
+    <!--<property name="defaultEncoding" value="UTF-8"/>-->
+    <!--<property name="cacheSeconds" value="60"/>-->
+    <!--</bean>-->
+
+    <!-- 加载配置 -->
+    <!--<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">-->
+    <!--<property name="basenames">-->
+    <!--<list>-->
+    <!--<value>messages</value>-->
+    <!--</list>-->
+    <!--</property>-->
+    <!--</bean>-->
+
+    <!-- 数据源 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${ds0.driverClassName}"/>
+        <property name="url" value="${ds0.url}"/>
+        <property name="username" value="${ds0.username}"/>
+        <property name="password" value="${ds0.password}"/>
+        <property name="maxActive" value="20"/>
+        <property name="initialSize" value="1"/>
+        <property name="maxWait" value="60000"/>
+        <property name="maxIdle" value="20"/>
+        <property name="minIdle" value="3"/>
+        <property name="removeAbandoned" value="true"/>
+        <property name="removeAbandonedTimeout" value="180"/>
+        <property name="validationQuery" value="SELECT COUNT(1) FROM DUAL"/>
+        <property name="minEvictableIdleTimeMillis" value="60000"/>
+        <property name="timeBetweenEvictionRunsMillis" value="10000"/>
+    </bean>
+
+    <!-- 开启AOP监听 只对当前配置文件有效 -->
+    <aop:aspectj-autoproxy expose-proxy="true"/>
+
+    <!-- 开启注解事务 只对当前配置文件有效 -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="create*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="merge*" propagation="REQUIRED"/>
+            <tx:method name="del*" propagation="REQUIRED"/>
+            <tx:method name="remove*" propagation="REQUIRED"/>
+            <tx:method name="put*" propagation="REQUIRED"/>
+            <tx:method name="use*" propagation="REQUIRED"/>
+            <!--hibernate4必须配置为开启事务 否则 getCurrentSession()获取不到-->
+            <tx:method name="get*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="count*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="find*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="list*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config expose-proxy="true">
+        <!-- 只对业务逻辑层实施事务 -->
+        <aop:pointcut id="txPointcut" expression="execution(* com.wonders.stpt.bid.service..*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+    </aop:config>
+
+    <bean id="userDetailsService" class="com.wonders.stpt.bid.service.impl.UserDetailServiceImpl">
+        <property name="enableGroups" value="false"/>
+        <property name="enableAuthorities" value="true"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="deleteUserSql" value="delete tt_bid_user  where login_name=?"/>
+        <property name="deleteUserAuthoritiesSql" value="delete tt_bid_user_role where login_name = ?"/>
+        <property name="changePasswordSql" value="update tt_bid_user set password = ? where login_name = ?"/>
+        <property name="userExistsSql" value="select login_name from tt_bid_user where login_name = ?"/>
+    </bean>
+
+    <bean id="webexpressionHandler"
+          class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler"/>
+    <!--<bean id="casAuthEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">-->
+        <!--<property name="loginUrl" value="http://10.1.40.202:8088/ca/login.jsp?appName=bid_zhou"/>-->
+        <!--<property name="serviceProperties" ref="casService"/>-->
+    <!--</bean>-->
+    <!--<bean id="casService" class="org.springframework.security.cas.ServiceProperties">-->
+        <!--<property name="service" value="http://localhost:8080/bid/j_spring_cas_security_check"/>-->
+        <!--<property name="serviceParameter" value="returnUrl"/>-->
+    <!--</bean>-->
+    <!--<bean id="casAuthenticationFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">-->
+        <!--<property name="authenticationManager" ref="authenticationManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="casAuthenticationProvider"-->
+          <!--class="org.springframework.security.cas.authentication.CasAuthenticationProvider">-->
+        <!--<property name="ticketValidator" ref="casTicketValidator"/>-->
+        <!--<property name="serviceProperties" ref="casService"/>-->
+        <!--<property name="key" value="124a77748fcb48a7a0863f30970a2a04"/>-->
+        <!--<property name="authenticationUserDetailsService" ref="authenticationUserDetailsService"/>-->
+    <!--</bean>-->
+    <!--<bean id="casTicketValidator" class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">-->
+        <!--<constructor-arg value="http://10.1.40.202:8088/ca/login.jsp?appName=bid_zhou"/>-->
+    <!--</bean>-->
+    <!--<bean id="authenticationUserDetailsService"-->
+          <!--class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">-->
+        <!--<property name="userDetailsService" ref="userDetailsService"/>-->
+    <!--</bean>-->
+
+</beans>

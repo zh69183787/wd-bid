@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.DictionaryDao" >
+    <resultMap type="Dictionary" id="dictionaryMap">
+        <id property="dictId" column="DICT_ID"/>
+        <id property="dictNo" column="DICT_NO"/>
+        <id property="dictName" column="DICT_NAME"/>
+        <id property="dictType" column="DICT_TYPE"/>
+        <id property="dictOrder" column="DICT_ORDER"/>
+        <result property="dictCode" column="DICT_CODE"/>
+        <result property="dictFullName" column="DICT_FULL_NAME"/>
+        <result property="dictFullCode" column="DICT_FULL_CODE"/>
+        <result property="parentNo" column="PARENT_NO"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+    </resultMap>
+    <insert id="insert" parameterType="Dictionary">
+        insert into TT_BID_DICTIONARY(
+        DICT_ID,
+        DICT_NO,
+        DICT_NAME,
+        DICT_TYPE,
+        DICT_ORDER,
+        DICT_CODE,
+        DICT_FULL_NAME,
+        DICT_FULL_CODE,
+        PARENT_NO,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+        ) values(
+        #{dictId,jdbcType=VARCHAR},
+        #{dictNo,jdbcType=VARCHAR},
+        #{dictName,jdbcType=VARCHAR},
+        #{dictType,jdbcType=VARCHAR},
+        #{dictOrder,jdbcType=NUMERIC},
+        #{dictCode,jdbcType=VARCHAR},
+        #{dictFullName,jdbcType=VARCHAR},
+        #{dictFullCode,jdbcType=VARCHAR},
+        #{parentNo,jdbcType=VARCHAR},
+        sysdate,
+        sysdate,
+        #{creator,jdbcType=VARCHAR},
+        #{updater,jdbcType=VARCHAR},
+        '0'
+        )
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="dictId">
+            SELECT SYS_GUID() FROM DUAL
+        </selectKey>
+    </insert>
+
+    <update id="update" parameterType="Dictionary">
+        update TT_BID_DICTIONARY
+        <set>
+            <if test="dictNo != null and dictNo != '' ">DICT_NO=#{dictNo,jdbcType=VARCHAR},</if>
+            <if test="dictName != null and dictName != '' ">DICT_NAME=#{dictName,jdbcType=VARCHAR},</if>
+            <if test="parentNo != null and dictName != '' ">PARENT_NO=#{parentNo,jdbcType=VARCHAR},</if>
+            <if test="dictType != null and dictType != '' ">DICT_TYPE=#{dictType,jdbcType=VARCHAR},</if>
+            <if test="dictOrder != null and dictOrder != '' ">DICT_ORDER=#{dictOrder,jdbcType=NUMERIC},</if>
+             <if test="dictCode != null and dictCode != '' ">DICT_CODE=#{dictCode,jdbcType=VARCHAR},</if>
+              <if test="dictFullName != null and dictFullName != '' ">DICT_FULL_NAME=#{dictFullName,jdbcType=VARCHAR},</if>
+               <if test="dictFullCode != null and dictFullCode != '' ">DICT_FULL_CODE=#{dictFullCode,jdbcType=VARCHAR},</if>
+            <if test="updater != null and updater != ''" >UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="creator != null and creator != ''" >CREATOR=#{creator,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != ''" >REMOVED=#{removed,jdbcType=CHAR},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            DICT_ID=#{dictId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BID_DICTIONARY where DICT_ID=#{id}
+    </delete>
+
+
+    <select id="select" resultMap="dictionaryMap" parameterType="Dictionary">
+        SELECT *  FROM TT_BID_DICTIONARY
+        <where>
+            removed = '0'
+            <if test="dictionary.dictName!=null and  dictionary.dictName!=''">
+                and	 DICT_NAME like '${dictionary.dictName}'||'%'
+            </if>
+            <if test="dictionary.dictType!=null and  dictionary.dictType!=''">
+                and	 DICT_TYPE= #{dictionary.dictType}
+            </if>
+            <if test="dictionary.dictNo!=null and  dictionary.dictNo!=''">
+                and	 DICT_NO like '${dictionary.dictNo}'||'%'
+            </if>
+            <if test="dictionary.removed!=null and  dictionary.removed!=''">
+                and	 REMOVED = #{dictionary.removed}
+            </if>
+            <if test="dictionary.parentNo!=null and  dictionary.parentNo!=''">
+                and	 PARENT_NO = #{dictionary.parentNo}
+            </if>
+            <if test="dictionary.parentNo==null">
+                and	 PARENT_NO is null
+            </if>
+        </where>
+
+        ORDER BY DICT_ORDER ASC;
+    </select>
+
+    <select id="selectAll" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY where REMOVED=0 ;
+
+    </select>
+    
+    <select id="selectAllByTypeCode" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY where REMOVED=0 and DICT_TYPE=#{dictType,jdbcType=VARCHAR}  and PARENT_NO is not null order by DICT_FULL_CODE  asc, DICT_ORDER asc
+    </select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY  where DICT_ID=#{id,jdbcType=VARCHAR} and REMOVED=0
+    </select>
+    
+    <select id="selectByFullCodeAndDictType" parameterType="java.lang.String" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY  where DICT_FULL_CODE=#{dictFullCode,jdbcType=VARCHAR} and REMOVED=0 and DICT_TYPE =#{dictType,jdbcType=VARCHAR}
+    </select>
+    
+    
+    <select id="selectByFullName" parameterType="java.lang.String" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY  where DICT_FULL_NAME=#{dictFullName,jdbcType=VARCHAR} and REMOVED=0
+    </select>
+    
+    <select id="selectAllByParentNo" parameterType="java.lang.String" resultMap="dictionaryMap">
+        select * from TT_BID_DICTIONARY  where PARENT_NO=#{parentNo,jdbcType=VARCHAR} and REMOVED=0 order by DICT_CODE asc
+    </select>
+
+    <select id="selectMaxDictNo" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select MAX(TO_NUMBER(DICT_NO)) from TT_BID_DICTIONARY
+    </select>
+</mapper>

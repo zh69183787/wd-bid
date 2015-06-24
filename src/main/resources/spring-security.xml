@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http pattern="/**/*.png" security="none"/>
+    <security:http pattern="/**/*.jpg" security="none"/>
+    <security:http pattern="/**/*.gif" security="none"/>
+    <security:http pattern="/**/*.css" security="none"/>
+    <security:http pattern="/**/*.js" security="none"/>
+    <security:http pattern="/**/*.ico" security="none"/>
+    <security:http pattern="/home" security="none"/>
+    <security:http pattern="/index" security="none"/>
+    <security:http pattern="/authenticationError" security="none"/>
+    <security:http pattern="/caClient.jsp" security="none"/>
+    <security:global-method-security pre-post-annotations="enabled"/>
+    <security:http auto-config="true">
+        <security:intercept-url pattern="/user/users" access="ROLE_ADMIN"/>
+        <security:intercept-url pattern="/user/**/password" access="ROLE_EDITOR,ROLE_ADMIN,ROLE_OBSERVER"/>
+        <security:intercept-url pattern="/route/form" access="ROLE_ADMIN"/>
+        <security:intercept-url pattern="/route/routeEdit" access="ROLE_ADMIN"/>
+        <security:intercept-url pattern="/route" access="ROLE_ADMIN" method="POST"/>
+        <security:intercept-url pattern="/route/**" access="ROLE_EDITOR,ROLE_ADMIN,ROLE_OBSERVER"/>
+        <security:intercept-url pattern="/bidding/save" access="ROLE_EDITOR,ROLE_ADMIN" />
+        <security:intercept-url pattern="/dictionary/save" access="ROLE_ADMIN" />
+        <security:intercept-url pattern="/company/companyEdit" access="ROLE_EDITOR,ROLE_ADMIN" />
+        <security:intercept-url pattern="/plan/save" access="ROLE_EDITOR,ROLE_ADMIN"/>
+        <security:intercept-url pattern="/company/save" access="ROLE_EDITOR,ROLE_ADMIN"/>
+        <security:intercept-url pattern="/result/results" access="ROLE_EDITOR,ROLE_ADMIN"/>
+        <security:intercept-url pattern="/bidding/biddingTimerTask" access="ROLE_EDITOR,ROLE_ADMIN,ROLE_OBSERVER"/>
+        <security:intercept-url pattern="/**" access="ROLE_EDITOR,ROLE_ADMIN,ROLE_OBSERVER"/>
+        <security:form-login login-page="/home" login-processing-url="/authentication" authentication-failure-url="/authenticationError" username-parameter="username"
+                             password-parameter="password"
+                             default-target-url="/dashboard"/>
+        <!--<security:custom-filter ref="casAuthenticationFilter" position="CAS_FILTER"/>-->
+        <security:logout logout-success-url="/home" delete-cookies="JSESSIONID" invalidate-session="true"
+                         logout-url="/logout"/>
+        <security:session-management session-fixation-protection="migrateSession"/>
+    </security:http>
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="userDetailsService">
+        </security:authentication-provider>
+        <!--<security:authentication-provider ref="casAuthenticationProvider"/>-->
+    </security:authentication-manager>
+
+
+    <!--<security:authentication-manager alias="authenticationManager">-->
+
+        <!--<security:authentication-provider>-->
+            <!--<security:user-service>-->
+                <!--<security:user authorities="ROLE_USER" name="admin" password="1qaz2wsx"/>-->
+
+            <!--</security:user-service>-->
+        <!--</security:authentication-provider>-->
+    <!--</security:authentication-manager>-->
+
+</beans>

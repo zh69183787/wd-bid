@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.RoleDao">
+	<resultMap type="Role" id="roleMap">
+		<result property="roleId" column="ROLE_ID" />
+		<result property="roleName" column="ROLE_NAME" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="removed" column="REMOVED" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="creator" column="CREATOR" />
+		<result property="updateTime" column="UPDATE_TIME" />
+		<result property="updater" column="UPDATER" />
+	</resultMap>
+<insert id="insert" parameterType="Role">
+	insert into TT_BID_ROLE
+		(   ROLE_ID,
+		    ROLE_NAME,
+		    DESCRIPTION,
+		    REMOVED,
+		    CREATE_TIME,
+		    CREATOR,
+		    UPDATE_TIME,
+		    UPDATER )
+	 values
+        SYS_GUID(),
+		#{roleName,jdbcType=VARCHAR},
+		#{description,jdbcType=VARCHAR},
+		#{statusCode,jdbcType=CHAR},
+		sysdate,
+		#{creator,jdbcType=VARCHAR},
+		sysdate,
+		#{updater,jdbcType=VARCHAR} )
+</insert>
+<select id="selectById" resultMap="roleMap">
+	select * from TT_BID_ROLE  where ROLE_ID=#{id} AND REMOVED = '0'
+</select>
+<delete id="delete">
+	delete from TT_BID_ROLE where ROLE_ID=#{id}
+</delete>
+    <select id="selectByLoginName" resultMap="roleMap">
+         SELECT R.ROLE_NAME FROM TT_BID_USER_ROLE UR  LEFT JOIN TT_BID_ROLE R  ON UR.ROLE_NAME = R.ROLE_NAME   WHERE UR.LOGIN_NAME = #{loginName}
+    </select>
+    <select id="select" resultMap="roleMap">
+        SELECT * FROM TT_BID_ROLE RO
+        <where>
+            <if test="role.removed !=null and  role.removed !='' ">AND REMOVED =#{role.removed}</if>
+            <if test="role.roleId !=null  and role. roleId !=''">AND ROLE_ID =#{role.roleId}</if>
+            <if test="role.roleName !=null  and  role.roleName !=''">AND ROLE_NAME like '${role.roleName}'||'%'</if>
+            <if test="role.creator !=null  and  role.creator !=''">AND CREATOR =#{role.creator}</if>
+            <if test="role.updater !=null and  role.updater !='' ">AND UPDATER =#{role.updater}</if>
+        </where>
+
+        order by UPDATE_TIME desc
+    </select>
+
+<update id="update">
+	update TT_BID_ROLE
+	<set> 
+		<if test="roleName !=null and  roleName !=''">ROLE_NAME=#{roleName,jdbcType=VARCHAR},</if>
+		<if test="description!=null and description !=''">DESCRIPTION=#{description,jdbcType=VARCHAR},</if>
+		<if test="removed!=null and removed !=''">REMOVED=#{removed,jdbcType=CHAR},</if>
+		UPDATE_TIME=sysdate,
+		<if test="updater!=null and updater !=''">UPDATER=#{updater,jdbcType=VARCHAR}</if>
+	</set>
+	<where>
+		ROLE_ID=#{roleId}
+	</where>
+</update>
+</mapper>

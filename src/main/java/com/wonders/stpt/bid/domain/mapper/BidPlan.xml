@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidPlanDao">
+    <resultMap type="BidPlan" id="bidPlanMap">
+        <id property="biddingPlanId" column="BIDDING_Plan_ID"/>
+        <result property="applyDate" column="APPLY_DATE"/>
+        <result property="bidBegin" column="BID_BEGIN"/>
+        <result property="bidEnd" column="BID_END"/>
+        <result property="tecOpenDate" column="TEC_OPEN_DATE"/>
+        <result property="checkDate" column="CHECK_DATE"/>
+        <result property="bizAppraiseDate" column="BIZ_APPRAISE_DATE"/>
+        <result property="tecAppraiseDate" column="TEC_APPRAISE_DATE"/>
+        <result property="hasLimit" column="HAS_LIMIT"/>
+        <result property="hasCheck" column="HAS_CHECK"/>
+        <result property="bizOpenDate" column="BIZ_OPEN_DATE"/>
+        <result property="limitPrice" column="LIMIT_PRICE"/>
+        <result property="biddingId" column="BIDDING_ID"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <result property="bidType" column="BID_TYPE"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <result property="biddingType" column="BIDDING_TYPE"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="routeName" column="ROUTE_NAME"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <collection property="biddingList" ofType="Bidding">
+            <id property="biddingId" column="BIDDING_ID"/>
+            <result property="biddingName" column="BIDDING_NAME"/>
+            <result property="biddingType" column="BIDDING_TYPE"/>
+            <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+            <result property="routeId" column="ROUTE_ID"/>
+            <result property="createTime" column="CREATE_TIME"/>
+            <result property="updateTime" column="UPDATE_TIME"/>
+            <result property="creator" column="CREATOR"/>
+            <result property="updater" column="UPDATER"/>
+            <result property="removed" column="REMOVED"/>
+            <association property="route" javaType="Route">
+                <id property="routeId" column="ROUTE_ID"/>
+                <result property="routeName" column="ROUTE_NAME"/>
+                <result property="routeType" column="ROUTE_TYPE"/>
+                <result property="createTime" column="CREATE_TIME"/>
+                <result property="updateTime" column="UPDATE_TIME"/>
+                <result property="creator" column="CREATOR"/>
+                <result property="updater" column="UPDATER"/>
+                <result property="removed" column="REMOVED"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <resultMap type="BidPlan" id="bidPlanSingleMap">
+        <id property="biddingPlanId" column="BIDDING_Plan_ID"/>
+        <result property="applyDate" column="APPLY_DATE"/>
+        <result property="bidBegin" column="BID_BEGIN"/>
+        <result property="bidEnd" column="BID_END"/>
+        <result property="tecOpenDate" column="TEC_OPEN_DATE"/>
+        <result property="checkDate" column="CHECK_DATE"/>
+        <result property="bizAppraiseDate" column="BIZ_APPRAISE_DATE"/>
+        <result property="tecAppraiseDate" column="TEC_APPRAISE_DATE"/>
+        <result property="hasLimit" column="HAS_LIMIT"/>
+        <result property="hasCheck" column="HAS_CHECK"/>
+        <result property="bizOpenDate" column="BIZ_OPEN_DATE"/>
+        <result property="limitPrice" column="LIMIT_PRICE"/>
+        <result property="biddingId" column="BIDDING_ID"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <result property="bidType" column="BID_TYPE"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <result property="biddingType" column="BIDDING_TYPE"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="routeName" column="ROUTE_NAME"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <collection property="biddingList" ofType="Bidding">
+            <id property="biddingId" column="BIDDING_ID"/>
+            <result property="biddingName" column="B_BIDDING_NAME"/>
+            <result property="biddingNo" column="BIDDING_NO"/>
+            <result property="biddingType" column="B_BIDDING_TYPE"/>
+            <result property="biddingTypeId" column="B_BIDDING_TYPE_ID"/>
+            <result property="routeId" column="ROUTE_ID"/>
+            <association property="route" javaType="Route">
+                <id property="routeId" column="ROUTE_ID"/>
+                <result property="routeName" column="R_ROUTE_NAME"/>
+                <result property="routeType" column="R_ROUTE_TYPE"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.wonders.stpt.bid.domain.BidPlan">
+        insert into TT_BID_PLAN(
+        BIDDING_PLAN_ID,
+        APPLY_DATE,
+        BID_BEGIN,
+        BID_END,
+        TEC_OPEN_DATE,
+        CHECK_DATE,
+        BIZ_APPRAISE_DATE,
+        TEC_APPRAISE_DATE,
+        BIZ_OPEN_DATE,
+        LIMIT_PRICE,
+        HAS_LIMIT,
+        HAS_CHECK,
+        BIDDING_ID,
+        BIDDING_NAME,
+        ROUTE_NAME,
+        BID_TYPE,
+        BIDDING_TYPE_ID,
+        BIDDING_TYPE,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+        ) values(
+        #{biddingPlanId,jdbcType=CHAR},
+        #{applyDate,jdbcType=DATE},
+        #{bidBegin,jdbcType=DATE},
+        #{bidEnd,jdbcType=DATE},
+        #{tecOpenDate,jdbcType=DATE},
+        #{checkDate,jdbcType=DATE},
+        #{bizAppraiseDate,jdbcType=DATE},
+        #{tecAppraiseDate,jdbcType=DATE},
+        #{bizOpenDate,jdbcType=DATE},
+        #{limitPrice,jdbcType=NUMERIC},
+        #{hasLimit,jdbcType=CHAR},
+        #{hasCheck,jdbcType=CHAR},
+        #{biddingId,jdbcType=DATE},
+
+        #{biddingName,jdbcType=VARCHAR},
+        #{routeName,jdbcType=VARCHAR},
+        #{bidType,jdbcType=CHAR},
+        #{biddingTypeId,jdbcType=VARCHAR},
+        #{biddingType,jdbcType=VARCHAR},
+        sysdate,
+        sysdate,
+        #{creator,jdbcType=VARCHAR},
+        #{updater,jdbcType=VARCHAR},
+        #{removed,jdbcType=CHAR}
+        )
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="biddingPlanId">
+            SELECT SYS_GUID() FROM DUAL
+        </selectKey>
+    </insert>
+
+
+    <update id="update" parameterType="com.wonders.stpt.bid.domain.BidPlan">
+        update TT_BID_PLAN
+        <set>
+            <!-- <if test="applyDate != null and applyDate != '' "> -->
+            APPLY_DATE=#{applyDate,jdbcType=DATE},
+            <!-- </if>
+            <if test="bidBegin != null and bidBegin != '' "> -->
+            BID_BEGIN=#{bidBegin,jdbcType=DATE},
+            <!-- </if>
+        	<if test="bidEnd != null and bidEnd != '' "> -->
+            BID_END=#{bidEnd,jdbcType=DATE},
+            <!-- </if>
+            <if test="tecOpenDate !=null and tecOpenDate !='' "> -->
+            TEC_OPEN_DATE=#{tecOpenDate,jdbcType=DATE},
+            <!-- </if>
+            <if test="checkDate != null and checkDate != '' "> -->
+            CHECK_DATE=#{checkDate,jdbcType=DATE},
+            <!-- </if>
+            <if test="bizAppraiseDate != null and bizAppraiseDate != '' "> -->
+            BIZ_APPRAISE_DATE=#{bizAppraiseDate,jdbcType=DATE},
+            <!-- </if>
+        	<if test="tecAppraiseDate != null and tecAppraiseDate != '' "> -->
+            TEC_APPRAISE_DATE=#{tecAppraiseDate,jdbcType=DATE},
+            <!-- </if>
+            <if test="bizOpenDate !=null and bizOpenDate !='' "> -->
+            BIZ_OPEN_DATE=#{bizOpenDate,jdbcType=DATE},
+            <!-- </if>
+            <if test="limitPrice != null and limitPrice != '' "> -->
+            LIMIT_PRICE=#{limitPrice,jdbcType=NUMERIC},
+            HAS_LIMIT=#{hasLimit,jdbcType=CHAR},
+            HAS_CHECK=#{hasCheck,jdbcType=CHAR},
+            <!-- </if> -->
+
+            <if test="biddingId !=null and biddingId !='' ">BIDDING_ID=#{biddingId,jdbcType=DATE},</if>
+            <if test="updater != null and updater != ''">UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != ''">REMOVED=#{removed,jdbcType=CHAR},</if>
+
+            <if test="routeName !=null and routeName !='' ">ROUTE_NAME=#{routeName,jdbcType=VARCHAR},</if>
+            <if test="biddingName != null and biddingName != ''">BIDDING_NAME=#{biddingName,jdbcType=VARCHAR},</if>
+            <if test="bidType != null and bidType != ''">BID_TYPE=#{bidType,jdbcType=CHAR},</if>
+            <if test="biddingTypeId !=null and biddingTypeId !='' ">BIDDING_TYPE_ID=#{biddingTypeId,jdbcType=VARCHAR},</if>
+            <if test="biddingType !=null and biddingType !='' ">BIDDING_TYPE=#{biddingType,jdbcType=VARCHAR},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            BIDDING_PLAN_ID=#{biddingPlanId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BID_PLAN where BIDDING_PLAN_ID=#{id}
+    </delete>
+
+    <select id="selectBidded" resultMap="bidPlanMap">
+
+    </select>
+
+    <select id="select" resultMap="bidPlanMap">
+       SELECT * FROM ( SELECT DISTINCT P.BIDDING_PLAN_ID,
+        P.APPLY_DATE,
+        P.BID_BEGIN,
+        P.BID_END,
+        P.TEC_OPEN_DATE,
+        P.HAS_LIMIT,
+        P.HAS_CHECK,
+        P.TEC_APPRAISE_DATE,
+        P.CHECK_DATE,
+        P.BIZ_OPEN_DATE,
+        P.BIZ_APPRAISE_DATE,
+        P.LIMIT_PRICE,
+        P.BIDDING_TYPE_ID,P.BIDDING_TYPE,
+        <if test="bidPlan.hasBidded!=null and bidPlan.hasBidded !='1'">CASE
+            WHEN NVL(
+            P.TEC_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) >
+            NVL(P.BIZ_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) THEN
+            P.TEC_APPRAISE_DATE
+            ELSE
+            P.BIZ_APPRAISE_DATE
+            END BID_TIME,
+        </if>
+        P.BID_TYPE,
+        P.CREATOR,P.UPDATER,P.ROUTE_NAME,P.BIDDING_NAME,P.UPDATE_TIME
+        FROM TT_BID_PLAN P,
+        TT_EXECUTE_PLAN_RELATION PR,
+        TT_BIDDING B,
+        <if test='company!= null and company.companyId!=null and company.companyId!=""  or company.trade!=null and company.trade!=""  or company.groups!=null and company.groups!=""  or company.companyName!=null and company.companyName!="" or (bidPlan.hasBidded!=null and bidPlan.hasBidded =="1")'>
+            TT_BID_COMPANY C,
+            TT_BID_RESULT BR,
+        </if>
+        TT_BID_ROUTE R
+        WHERE P.
+        BIDDING_PLAN_ID = PR.EXECUTE_ID
+        <if test='company!= null and company.companyId!=null and company.companyId!=""  or company.trade!=null and company.trade!=""  or company.groups!=null and company.groups!=""  or company.companyName!=null and company.companyName!="" or (bidPlan.hasBidded!=null and bidPlan.hasBidded =="1")'>
+         AND P.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+         AND BR.COMPANY_ID = C.COMPANY_ID
+        </if>
+         AND B.BIDDING_ID = PR.PLAN_ID
+         AND B.ROUTE_ID = R.ROUTE_ID
+         AND P.REMOVED = '0'
+        <!-- FROM TT_BID_PLAN P,TT_EXECUTE_PLAN_RELATION PR,TT_BIDDING B,TT_BID_ROUTE R,TT_BID_COMPANY C,TT_BID_RESULT BR
+         WHERE P.BIDDING_PLAN_ID = PR.EXECUTE_ID AND B.BIDDING_ID = PR.PLAN_ID AND R.ROUTE_ID = B.ROUTE_ID AND P.REMOVED= '0'-->
+       <!-- AND B.REMOVED= '0'-->
+        <if test="bidPlan.biddingPlanId!=null and bidPlan.biddingPlanId!=''">
+            and P.BIDDING_PLAN_ID = #{bidPlan.biddingPlanId}
+        </if>
+        <if test='bidPlan.hasBidded==null or bidPlan.hasBidded !="1"'>
+        <if test="bidPlan.beginOpenDate!=null">
+            and P.TEC_OPEN_DATE >= TRUNC(#{bidPlan.beginOpenDate}, 'DD')
+        </if>
+        <if test="bidPlan.endOpenDate!=null">
+            and P.TEC_OPEN_DATE &lt;= TRUNC(#{bidPlan.endOpenDate}, 'DD')
+        </if>
+
+        <if test="bidPlan.beginApplyDate!=null">
+            and P.APPLY_DATE >= TRUNC(#{bidPlan.beginApplyDate}, 'DD')
+        </if>
+        <if test="bidPlan.endApplyDate!=null">
+            and P.APPLY_DATE &lt;= TRUNC(#{bidPlan.endApplyDate}, 'DD')
+        </if>
+
+        <if test="bidPlan.beginBidBeginDate!=null">
+            and P.BID_BEGIN >= TRUNC(#{bidPlan.beginBidBeginDate}, 'DD')
+        </if>
+        <if test="bidPlan.beginBidEndDate!=null">
+            and P.BID_BEGIN &lt;= TRUNC(#{bidPlan.beginBidEndDate}, 'DD')
+        </if>
+        <if test="bidPlan.beginCheckDate!=null">
+            and P.CHECK_DATE >= TRUNC(#{bidPlan.beginCheckDate}, 'DD')
+        </if>
+        <if test="bidPlan.endCheckDate!=null">
+            and P.CHECK_DATE &lt;= TRUNC(#{bidPlan.endCheckDate}, 'DD')
+        </if>
+        <if test="bidPlan.beginBizDate!=null">
+            and P.BIZ_APPRAISE_DATE >= TRUNC(#{bidPlan.beginBizDate}, 'DD')
+        </if>
+        <if test="bidPlan.endBizDate!=null">
+            and P.BIZ_APPRAISE_DATE &lt;= TRUNC(#{bidPlan.endBizDate}, 'DD')
+        </if>
+        <if test="bidPlan.endBidBeginDate!=null">
+            and P.BID_END >= TRUNC(#{bidPlan.endBidBeginDate}, 'DD')
+        </if>
+        <if test="bidPlan.endBidEndDate!=null">
+            and P.BID_END &lt;= TRUNC(#{bidPlan.endBidEndDate}, 'DD')
+        </if>
+        </if>
+
+        <if test="bidPlan.biddingName!=null and bidPlan.biddingName!=''">
+            and P.BIDDING_NAME like '%'||'${bidPlan.biddingName}'||'%'
+        </if>
+
+        <if test="bidPlan.routeName!=null and bidPlan.routeName!=''">
+            and P.ROUTE_NAME=#{bidPlan.routeName}
+        </if>
+        <if test="bidPlan.biddingTypeId!=null and bidPlan.biddingTypeId!=''">
+            and P.BIDDING_TYPE_ID like '${bidPlan.biddingTypeId}'||'%'
+        </if>
+        <if test="bidPlan.biddingType!=null and bidPlan.biddingType!=''">
+            and P.BIDDING_TYPE=#{bidPlan.biddingType}
+        </if>
+        <if test="bidPlan.bidType!=null and bidPlan.bidType!=''">
+            and P.BID_TYPE=#{bidPlan.bidType}
+        </if>
+        <if test="bidPlan.biddingId!=null and bidPlan.biddingId!=''">
+            and PR.PLAN_ID=#{bidPlan.biddingId}
+        </if>
+        <if test="bidPlan.bidding!=null and bidPlan.bidding.route !=null  and bidPlan.bidding.route.company !=null and bidPlan.bidding.route.company!=''">
+            and R.COMPANY=#{bidPlan.bidding.route.company}
+        </if>
+
+        <if test="company!= null and company.companyId!=null and company.companyId!=''">
+        AND C.COMPANY_ID = #{company.companyId}
+        </if>
+        <if test="company!= null and company.trade!=null and company.trade!=''">
+                and C.TRADE like '%'||'${company.trade}'||'%'
+        </if>
+        <if test="company!= null and company.groups!=null and company.groups!=''">
+            AND C.GROUPS = #{company.groups}
+        </if>
+        <if test="company!= null and company.companyName!=null and company.companyName!=''">
+            AND C.COMPANY_NAME  like '%'||'${company.companyName}'||'%'
+        </if>
+
+        <if test='bidPlan.hasBidded!=null and bidPlan.hasBidded =="1"'>
+            AND BR.FINAL_PRICE  > 0
+        </if>
+
+
+
+        <if test="bidPlan.creator!=null and bidPlan.creator!=''">
+            and P.CREATOR=#{bidPlan.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidPlan.updater!=null and bidPlan.updater!=''">
+            and P.UPDATER=#{bidPlan.updater,jdbcType=VARCHAR}
+        </if>)
+        <if test='bidPlan.hasBidded!=null and bidPlan.hasBidded =="1"'>
+        <where>
+            <if test="bidPlan.beginBizDate!=null">
+                and BID_TIME >= TRUNC(#{bidPlan.beginBizDate}, 'DD')
+            </if>
+            <if test="bidPlan.endBizDate!=null">
+                and BID_TIME &lt;= TRUNC(#{bidPlan.endBizDate}, 'DD')
+            </if>
+        </where>
+</if>
+
+        ORDER BY UPDATE_TIME DESC ;
+    </select>
+
+   <select id="selectPlan"  resultMap="bidPlanMap" parameterType="BidPlan">
+       SELECT DISTINCT P.BIDDING_PLAN_ID,
+       P.APPLY_DATE,
+       P.BID_BEGIN,
+       P.BID_END,
+       P.TEC_OPEN_DATE,
+       P.HAS_LIMIT,
+       P.HAS_CHECK,
+       P.TEC_APPRAISE_DATE,
+       P.CHECK_DATE,
+       P.BIZ_OPEN_DATE,
+       P.BIZ_APPRAISE_DATE,
+       P.LIMIT_PRICE,
+       P.BIDDING_TYPE_ID,P.BIDDING_TYPE,
+       P.BID_TYPE,
+       P.CREATOR,P.UPDATER,P.ROUTE_NAME,P.BIDDING_NAME,P.UPDATE_TIME
+        FROM TT_BID_PLAN P,TT_EXECUTE_PLAN_RELATION PR,TT_BIDDING B,TT_BID_ROUTE R
+        WHERE P.BIDDING_PLAN_ID = PR.EXECUTE_ID AND B.BIDDING_ID = PR.PLAN_ID AND R.ROUTE_ID = B.ROUTE_ID AND P.REMOVED= '0'
+       <!-- AND B.REMOVED= '0'-->
+       <if test="bidPlan.beginOpenDate!=null">
+           and P.TEC_OPEN_DATE >= TRUNC(#{bidPlan.beginOpenDate}, 'DD')
+       </if>
+       <if test="bidPlan.endOpenDate!=null">
+           and P.TEC_OPEN_DATE &lt;= TRUNC(#{bidPlan.endOpenDate}, 'DD')
+       </if>
+
+       <if test="bidPlan.beginApplyDate!=null">
+           and P.APPLY_DATE >= TRUNC(#{bidPlan.beginApplyDate}, 'DD')
+       </if>
+       <if test="bidPlan.endApplyDate!=null">
+           and P.APPLY_DATE &lt;= TRUNC(#{bidPlan.endApplyDate}, 'DD')
+       </if>
+
+       <if test="bidPlan.beginBidBeginDate!=null">
+           and P.BID_BEGIN >= TRUNC(#{bidPlan.beginBidBeginDate}, 'DD')
+       </if>
+       <if test="bidPlan.beginBidEndDate!=null">
+           and P.BID_BEGIN &lt;= TRUNC(#{bidPlan.beginBidEndDate}, 'DD')
+       </if>
+       <if test="bidPlan.beginCheckDate!=null">
+           and P.CHECK_DATE >= TRUNC(#{bidPlan.beginCheckDate}, 'DD')
+       </if>
+       <if test="bidPlan.endCheckDate!=null">
+           and P.CHECK_DATE &lt;= TRUNC(#{bidPlan.endCheckDate}, 'DD')
+       </if>
+       <if test="bidPlan.beginBizDate!=null">
+           and P.BIZ_APPRAISE_DATE >= TRUNC(#{bidPlan.beginBizDate}, 'DD')
+       </if>
+       <if test="bidPlan.endBizDate!=null">
+           and P.BIZ_APPRAISE_DATE &lt;= TRUNC(#{bidPlan.endBizDate}, 'DD')
+       </if>
+       <if test="bidPlan.endBidBeginDate!=null">
+           and P.BID_END >= TRUNC(#{bidPlan.endBidBeginDate}, 'DD')
+       </if>
+       <if test="bidPlan.endBidEndDate!=null">
+           and P.BID_END &lt;= TRUNC(#{bidPlan.endBidEndDate}, 'DD')
+       </if>
+       <if test="bidPlan.beginTecAppraiseDate!=null">
+           and P.TEC_APPRAISE_DATE >= TRUNC(#{bidPlan.beginTecAppraiseDate}, 'DD')
+       </if>
+       <if test="bidPlan.endTecAppraiseDate!=null">
+           and P.TEC_APPRAISE_DATE &lt;= TRUNC(#{bidPlan.endTecAppraiseDate}, 'DD')
+       </if>
+       <if test="bidPlan.biddingName!=null and bidPlan.biddingName!=''">
+           and P.BIDDING_NAME like '%'||'${bidPlan.biddingName}'||'%'
+       </if>
+
+       <if test="bidPlan.routeName!=null and bidPlan.routeName!=''">
+           and P.ROUTE_NAME=#{bidPlan.routeName}
+       </if>
+       <if test="bidPlan.biddingTypeId!=null and bidPlan.biddingTypeId!=''">
+           and P.BIDDING_TYPE_ID like '${bidPlan.biddingTypeId}'||'%'
+       </if>
+       <if test="bidPlan.biddingType!=null and bidPlan.biddingType!=''">
+           and P.BIDDING_TYPE=#{bidPlan.biddingType}
+       </if>
+       <if test="bidPlan.bidType!=null and bidPlan.bidType!=''">
+           and P.BID_TYPE=#{bidPlan.bidType}
+       </if>
+       <if test="bidPlan.biddingId!=null and bidPlan.biddingId!=''">
+           and PR.PLAN_ID=#{bidPlan.biddingId}
+       </if>
+       <if test="bidPlan.bidding!=null and bidPlan.bidding.route !=null  and bidPlan.bidding.route.company !=null and bidPlan.bidding.route.company!=''">
+           and R.COMPANY=#{bidPlan.bidding.route.company}
+       </if>
+
+       <if test="bidPlan.creator!=null and bidPlan.creator!=''">
+           and P.CREATOR=#{bidPlan.creator,jdbcType=VARCHAR}
+       </if>
+       <if test="bidPlan.updater!=null and bidPlan.updater!=''">
+           and P.UPDATER=#{bidPlan.updater,jdbcType=VARCHAR}
+       </if>
+
+       ORDER BY P.UPDATE_TIME DESC ;
+    </select>
+
+
+
+
+
+    <select id="selectAll" resultMap="bidPlanMap">
+        select * from TT_BID_PLAN where REMOVED=0;
+    </select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="bidPlanSingleMap">
+        SELECT P.BIDDING_PLAN_ID,
+        P.APPLY_DATE,
+        P.BID_BEGIN,
+        P.HAS_LIMIT,
+        P.HAS_CHECK,
+        P.BID_END,
+        P.TEC_OPEN_DATE,
+        P.TEC_APPRAISE_DATE,
+        P.CHECK_DATE,
+        P.BIZ_OPEN_DATE,
+        P.BIZ_APPRAISE_DATE,
+        P.LIMIT_PRICE,
+        B.BIDDING_ID,B.BIDDING_NO,
+        P.CREATOR,P.UPDATER,P.ROUTE_NAME,P.BIDDING_NAME,P.BID_TYPE,P.BIDDING_TYPE_ID,P.BIDDING_TYPE,B.BIDDING_TYPE_ID B_BIDDING_TYPE_ID,B.BIDDING_TYPE B_BIDDING_TYPE,B.BIDDING_NAME B_BIDDING_NAME,R.ROUTE_NAME R_ROUTE_NAME,
+        B.ROUTE_ID
+        FROM TT_BID_PLAN P,TT_EXECUTE_PLAN_RELATION PR,TT_BIDDING B,TT_BID_ROUTE R
+        where P.BIDDING_PLAN_ID = PR.EXECUTE_ID AND B.BIDDING_ID = PR.PLAN_ID AND R.ROUTE_ID = B.ROUTE_ID AND BIDDING_PLAN_ID=#{id}
+    </select>
+
+    <insert id="insertRelation">
+        insert into TT_EXECUTE_PLAN_RELATION(
+        ID,
+        PLAN_ID,
+        EXECUTE_ID
+        ) values
+            (
+            SYS_GUID(),
+            #{planId,jdbcType=CHAR},
+            #{executeId,jdbcType=CHAR}
+            )
+
+    </insert>
+
+    <delete id="deleteRelation">
+        delete from TT_EXECUTE_PLAN_RELATION
+        <where>
+            EXECUTE_ID=#{executeId}
+        </where>
+    </delete>
+        <resultMap type="java.util.HashMap" id="distributionMap">
+        <result property="routename" column="ROUTENAME"/>
+        <result property="btype" column="BTYPE"/>
+        <result property="countbid" column="COUNTBID"/>
+        <result property="sumprice" column="SUMPRICE"/>
+    </resultMap>
+    
+    <select id="getDistributionPlan"  parameterType="BidPlan" resultMap="distributionMap">
+        SELECT r.route_name ROUTENAME,SUBSTR(P.BIDDING_TYPE_ID,0,1 ) BTYPE,COUNT(t.bidding_id) COUNTBID,SUM(T.FINAL_PRICE) SUMPRICE
+    FROM TT_BID_RESULT T ,TT_BID_PLAN P,tt_bidding b,tt_bid_route r
+    WHERE
+   T.REMOVED='0' 
+  and  T.FINAL_PRICE>0 
+     AND P.BIDDING_PLAN_ID = T.BIDDING_PLAN_ID
+    AND P.REMOVED='0' 
+    and b.bidding_id = t.bidding_id
+    and r.route_id = b.route_id
+       <if test="bidPlan.beginOpenDate!=null">
+           and P.TEC_OPEN_DATE >= TRUNC(#{bidPlan.beginOpenDate}, 'DD')
+       </if>
+       <if test="bidPlan.endOpenDate!=null">
+           and P.TEC_OPEN_DATE &lt;= TRUNC(#{bidPlan.endOpenDate}, 'DD')
+       </if>
+		    GROUP BY r.route_name,SUBSTR(P.BIDDING_TYPE_ID,0,1 )
+    ORDER BY ROUTENAME asc,BTYPE
+    </select>
+</mapper>

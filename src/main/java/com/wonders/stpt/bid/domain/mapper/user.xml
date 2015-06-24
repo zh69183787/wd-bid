@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.UserDao" >
+    <resultMap type="User" id="userMap">
+        <id property="userId" column="USER_ID"/>
+        <result property="loginName" column="LOGIN_NAME"/>
+        <result property="password" column="PASSWORD"/>
+        <result property="userName" column="USER_NAME"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="User">
+        insert into TT_BID_USER(
+        USER_ID,
+        LOGIN_NAME,
+        USER_NAME,
+        PASSWORD
+        ) values(
+        SYS_GUID(),
+        #{loginName,jdbcType=VARCHAR},
+        #{userName,jdbcType=VARCHAR},
+        #{password,jdbcType=CHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="User">
+        update TT_BID_USER
+        <set>
+            <if test="loginName != null and loginName != '' ">LOGIN_NAME=#{loginName,jdbcType=VARCHAR},</if>
+            <if test="userName != null and userName != '' ">USER_NAME=#{userName,jdbcType=CHAR},</if>
+            <if test="password != null and password != ''" >PASSWORD=#{password,jdbcType=VARCHAR},</if>
+        </set>
+        <where>
+            USER_ID=#{userId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <select id="select" parameterType="java.lang.String" resultMap="userMap">
+        select distinct U.* from TT_BID_USER U left join tt_bid_user_role r on r.login_name = u.login_name
+        <where>
+            <if test="user.loginName !=null and user.loginName ">AND U.LOGIN_NAME=#{user.loginName}</if>
+            <if test="user.userId !=null and user.userId ">AND U.USER_ID = #{user.userId}</if>
+            <if test="user.userName !=null and user.userName ">AND USER_NAME = #{user.userName}</if>
+            <if test="user.password !=null  and user.password">AND PASSWORD = #{user.password}</if>
+            <if test="roleName !=null  and roleName">AND ROLE_NAME = #{roleName}</if>
+            
+        </where>
+        ORDER BY user_id DESC
+    </select>
+
+</mapper>

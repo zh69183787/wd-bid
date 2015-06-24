@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.ReportDao">
+    <resultMap id="routeMap" type="java.util.Map">
+        <id property="routeId" column="ROUTE_ID"/>
+        <result property="name" column="ROUTE_NAME"/>
+        <result property="routeName" column="R_NAME"/>
+        <result property="name" column="BID_TYPE_NAME"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="biddingId" column="BIDDING_ID"/>
+        <result property="biddingType" column="BIDDING_TYPE"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <result property="total" column="TOTAL"/>
+        <result property="price" column="PRICE"/>
+        <result property="completed" column="COMPLETED"/>
+        <result property="groups" column="GROUPS"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="createTime" column="CREATE_TIME"/>
+    </resultMap>
+    <resultMap id="bidMap" type="java.util.Map">
+        <result property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="biddingNum" column="BIDDING_NUM"/>
+        <result property="total" column="TOTAL"/>
+        <result property="price" column="PRICE"/>
+        <result property="completed" column="COMPLETED"/>
+        <result property="ratio" column="RATIO"/>
+        <result property="routename" column="ROUTE_NAME"/>
+    </resultMap>
+
+    <resultMap id="planMap" type="java.util.Map">
+        <result property="biddingPlanId" column="BIDDING_PLAN_ID"/>
+        <result property="routeName" column="ROUTE_NAME"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="biddingType" column="BIDDING_TYPE"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <result property="finalPrice" column="FINAL_PRICE"/>
+        <result property="company" column="COMPANY_NAME"/>
+        <result property="bidTime" column="BID_TIME"/>
+    </resultMap>
+
+
+    <sql id="bidPeParam">
+        AND BR.BIDDING_ID = B.BIDDING_ID
+        AND B.ROUTE_ID = R.ROUTE_ID AND BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        AND C.COMPANY_ID = BR.COMPANY_ID
+        AND BR.REMOVED = '0'
+        AND B.REMOVED = '0'
+        AND R.REMOVED = '0'
+        AND BP.REMOVED = '0'
+        AND BR.REMOVED = '0'
+        <if test="p.routeId!=null and p.routeId!=''">
+        AND B.ROUTE_ID = #{p.routeId}
+        </if>
+        <if test="p.beginOpenDate!=null">
+            AND BP.TEC_OPEN_DATE >= #{p.beginOpenDate}
+        </if>
+        <if test="p.endOpenDate!=null">
+            AND BP.TEC_OPEN_DATE &lt;= #{p.endOpenDate}
+        </if>
+        <if test="p.biddingTypeId!=null">
+
+            AND B.BIDDING_TYPE_ID like '${p.biddingTypeId}'||'%'
+        </if>
+    </sql>
+
+    <sql id="queryParam">
+
+        BR.BIDDING_ID = B.BIDDING_ID
+        AND B.ROUTE_ID = R.ROUTE_ID AND BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        AND BR.REMOVED = '0'
+        AND B.REMOVED = '0'
+        AND R.REMOVED = '0'
+        AND BP.REMOVED = '0'
+            <if test="p.beginOpenDate!=null">
+                AND BP.TEC_OPEN_DATE >= #{p.beginOpenDate}
+            </if>
+            <if test="p.endOpenDate!=null">
+                AND BP.TEC_OPEN_DATE &lt;= #{p.endOpenDate}
+            </if>
+        <if test="p.beginBizDate!=null">
+            AND BP.BIZ_APPRAISE_DATE >= #{p.beginBizDate}
+        </if>
+        <if test="p.endBizDate!=null">
+            AND BP.BIZ_APPRAISE_DATE &lt;= #{p.endBizDate}
+        </if>
+            <if test="p.isCheck!=null">
+                <if test=' p.isCheck == "1"'>
+                     AND BP.HAS_CHECK = #{p.isCheck}
+                </if>
+                <if test=' p.isCheck == "0"'>
+                    AND (BP.HAS_CHECK IS NULL OR BP.HAS_CHECK =  #{p.isCheck})
+                </if>
+            </if>
+            <if test="p.hasLimit!=null">
+                <if test=' p.hasLimit == "1"'>
+                    AND BP.HAS_LIMIT = #{p.hasLimit}
+                </if>
+                <if test=' p.hasLimit == "0"'>
+                    AND (BP.HAS_LIMIT IS NULL OR BP.HAS_LIMIT =  #{p.hasLimit})
+                </if>
+            </if>
+            <if test="p.routeId!=null and p.routeId !=''">
+                AND B.ROUTE_ID = #{p.routeId}
+            </if>
+
+
+    </sql>
+
+
+    <select id="countBidNumByBiddingType" resultMap="bidMap">
+    SELECT NVL(COUNT(1),0) BIDDING_NUM,NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5) NAME
+    FROM TT_BID_RESULT BR,
+    TT_BID_ROUTE  R,
+    TT_BIDDING    B,
+    TT_BID_PLAN   BP,
+    TT_BID_COMPANY C
+    <where>
+    <include refid="queryParam"/>
+    AND C.COMPANY_ID = BR.COMPANY_ID
+
+    AND C.REMOVED = '0'
+    AND BR.FINAL_PRICE > 0
+    </where>
+
+
+    GROUP BY NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5) ORDER BY NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5)
+    </select>
+
+
+    <select id="countRouteBiddingNum" resultMap="bidMap">
+
+         SELECT
+        <if test='type!=null and type =="route"'>
+            R.ROUTE_ID ID,R.ROUTE_NAME NAME,
+        </if>
+        <if test='type!=null and type =="bidding"'>
+            SUBSTR(NVL(B.BIDDING_TYPE_ID,'5'), 0, 1) ID,SUBSTR(NVL(B.BIDDING_TYPE_ID,'5'), 0, 1) NAME,
+        </if>
+
+        NVL(COUNT(BIDDING_ID),0) BIDDING_NUM
+        FROM TT_BID_ROUTE R LEFT JOIN TT_BIDDING B  ON R.ROUTE_ID = B.ROUTE_ID
+       <where>
+           AND R.REMOVED = '0' AND NVL(B.REMOVED,'0') = '0'
+
+       </where>
+        <if test='type!=null and type =="route"'>
+            GROUP BY R.ROUTE_ID,R.ROUTE_NAME
+        </if>
+
+        <if test='type!=null and type =="bidding"'>
+            GROUP BY SUBSTR(NVL(B.BIDDING_TYPE_ID,'5'), 0, 1)
+        </if>
+        UNION ALL
+        SELECT 'total' ID, 'total' NAME, NVL(COUNT(BIDDING_ID), 0) BIDDING_NUM
+        FROM TT_BID_ROUTE R
+        LEFT JOIN TT_BIDDING B
+        ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE R.REMOVED = '0'
+        AND B.REMOVED = '0'
+        ORDER BY NAME
+    </select>
+
+    <select id="countAllRoute" resultMap="routeMap">
+        SELECT ROUTE_NAME,
+        ROUTE_ID,
+        COUNT(DISTINCT(BIDDING_ID)) TOTAL,
+        SUM(NUM) COMPLETED,
+        SUM(PRICE) PRICE
+        FROM (SELECT BR.BIDDING_ID,
+        R.ROUTE_NAME,
+        R.ROUTE_ID,
+        (SELECT COUNT(DISTINCT(BIDDING_ID))
+        FROM TT_BID_RESULT
+        WHERE FINAL_PRICE > 0 AND BR.COMPANY_ID = COMPANY_ID
+        AND BIDDING_ID = BR.BIDDING_ID) NUM,
+        NVL(SUM(BR.FINAL_PRICE), 0) PRICE
+        FROM TT_BID_RESULT BR, TT_BID_ROUTE R, TT_BIDDING B,TT_BID_PLAN BP
+
+        <where>
+            <include refid="queryParam"/>
+        </where>
+        GROUP BY R.ROUTE_NAME, R.ROUTE_ID, BR.BIDDING_ID,BR.COMPANY_ID)
+        GROUP BY ROUTE_ID,ROUTE_NAME
+        UNION ALL
+        SELECT 'total',
+        'total',
+        COUNT(DISTINCT(BIDDING_ID)) TOTAL,
+        SUM(NUM) COMPLETED,
+        SUM(PRICE) PRICE
+        FROM (SELECT BR.BIDDING_ID,
+        R.ROUTE_NAME,
+        R.ROUTE_ID,
+        (SELECT COUNT(DISTINCT(BIDDING_ID))
+        FROM TT_BID_RESULT
+        WHERE FINAL_PRICE > 0 AND BR.COMPANY_ID = COMPANY_ID
+        AND BIDDING_ID = BR.BIDDING_ID) NUM,
+        NVL(SUM(BR.FINAL_PRICE), 0) PRICE
+        FROM TT_BID_RESULT BR, TT_BID_ROUTE R, TT_BIDDING B,TT_BID_PLAN BP
+
+        <where>
+             <include refid="queryParam"/>
+        </where>
+        GROUP BY R.ROUTE_NAME, R.ROUTE_ID, BR.BIDDING_ID,BR.COMPANY_ID)
+
+       <!-- ORDER BY TRANSLATE (ROUTE_NAME,'一二三四五六七八九十','abcdefghij')-->
+    </select>
+
+    <select id="countRouteByType" resultMap="routeMap">
+        SELECT BID_TYPE_NAME,
+        COUNT(DISTINCT(BIDDING_ID)) TOTAL,
+        SUM(NUM) COMPLETED,
+        SUM(PRICE) PRICE
+        FROM (SELECT SUBSTR(NVL(B.BIDDING_TYPE_ID, '5'), 0, 1) BID_TYPE_NAME,
+        (SELECT COUNT(DISTINCT(BIDDING_ID))
+        FROM TT_BID_RESULT
+        WHERE FINAL_PRICE > 0 AND BR.COMPANY_ID = COMPANY_ID
+        AND BIDDING_ID = BR.BIDDING_ID) NUM,
+        NVL(SUM(BR.FINAL_PRICE), 0) PRICE, BR.BIDDING_ID
+        FROM TT_BID_RESULT BR,
+        TT_BID_ROUTE  R,
+        TT_BIDDING    B,
+        TT_BID_PLAN   BP
+        <where>
+            <include refid="queryParam"/>
+        </where>
+        GROUP BY B.BIDDING_TYPE_ID, BR.BIDDING_ID,BR.COMPANY_ID)
+        GROUP BY BID_TYPE_NAME
+        UNION ALL
+        SELECT 'total',
+        COUNT(DISTINCT(BIDDING_ID)) TOTAL,
+        SUM(NUM) COMPLETED,
+        SUM(PRICE) PRICE
+        FROM (SELECT SUBSTR(NVL(B.BIDDING_TYPE_ID, '5'), 0, 1) BID_TYPE_NAME,
+        (SELECT COUNT(DISTINCT(BIDDING_ID))
+        FROM TT_BID_RESULT
+        WHERE FINAL_PRICE > 0
+        AND BIDDING_ID = BR.BIDDING_ID AND BR.COMPANY_ID = COMPANY_ID) NUM,
+        NVL(SUM(BR.FINAL_PRICE), 0) PRICE, BR.BIDDING_ID
+        FROM TT_BID_RESULT BR,
+        TT_BID_ROUTE  R,
+        TT_BIDDING    B,
+        TT_BID_PLAN   BP
+        <where>
+            <include refid="queryParam"/>
+        </where>
+        GROUP BY B.BIDDING_TYPE_ID, BR.BIDDING_ID,BR.COMPANY_ID)
+        ORDER BY BID_TYPE_NAME
+    </select>
+
+
+    <select id="countRouteId" resultMap="routeMap">
+        SELECT B.BIDDING_ID,
+        (SELECT ROUTE_NAME FROM TT_BID_ROUTE WHERE ROUTE_ID = B.ROUTE_ID) R_NAME,
+        C.GROUPS,
+        C.COMPANY_NAME,
+        BR.FINAL_PRICE PRICE,
+        BP.BIDDING_NAME,
+        BP.BIDDING_TYPE,
+        BP.BIDDING_TYPE_ID,
+        BR.CREATE_TIME ,
+        SUBSTR(B.BIDDING_TYPE_ID, 0, 1) BID_TYPE_NAME,
+        '0' TJ
+        FROM TT_BID_RESULT BR,
+        TT_BID_ROUTE  R,
+        TT_BIDDING    B,
+        TT_BID_PLAN   BP,
+        TT_BID_COMPANY C
+        <where>
+            <include refid="queryParam"/>
+            AND C.COMPANY_ID = BR.COMPANY_ID
+
+            AND C.REMOVED = '0'
+            AND BR.FINAL_PRICE > 0
+        </where>
+
+        UNION
+        SELECT '','',COUNT(C.GROUPS)|| '' GROUPS, COUNT(C.COMPANY_NAME)|| '' COMPNAY_NAME,SUM(BR.FINAL_PRICE) PRICE,COUNT(B.BIDDING_ID)||'' BIDDING_NAME,'','',NULL,COUNT(DISTINCT(SUBSTR(B.BIDDING_TYPE_ID, 0, 1)))||'' BID_TYPE_NAME,'1' TJ
+        FROM TT_BID_RESULT BR,
+        TT_BID_ROUTE  R,
+        TT_BIDDING    B,
+        TT_BID_PLAN   BP,
+        TT_BID_COMPANY C
+        <where>
+
+            <include refid="queryParam"/>
+            AND C.COMPANY_ID = BR.COMPANY_ID
+
+            AND C.REMOVED = '0'
+            AND BR.FINAL_PRICE > 0
+        </where>
+        ORDER BY TJ
+    </select>
+
+
+    <select id="countBidByGroupsOrName" resultMap="bidMap">
+
+        SELECT NAME,
+        <if test='p.type =="bidding"'>
+            ROUTENAME,
+        </if>
+        COUNT(BIDDING_ID) TOTAL,
+        SUM(NUM) COMPLETED,
+        SUM(PRICE) PRICE,
+        ROUND(SUM(NUM) / COUNT(BIDDING_ID) * 100, 2) || '%' ratio
+        FROM (SELECT BR.BIDDING_ID,
+        C.COMPANY_ID,
+        <if test='p.type =="groups"'>
+            (CASE WHEN INSTR(C.GROUPS,'集团', 1) > 0 OR  INSTR(C.GROUPS,'信号', 1)>0 OR  INSTR(C.GROUPS,'腾达', 1)>0 OR  INSTR(C.GROUPS,'宏润', 1)>0  THEN C.GROUPS ELSE '其他' END) NAME,
+        </if>
+        <if test='p.type =="company"'>
+            C.COMPANY_NAME NAME,
+        </if>
+        <if test='p.type =="bidding"'>
+            B.BIDDING_NAME NAME,
+            (SELECT ROUTE_NAME FROM TT_BID_ROUTE WHERE ROUTE_ID=B.ROUTE_ID) ROUTENAME,
+        </if>
+        COUNT(BR.BID_RESULT_ID) TOTAL,
+        (SELECT COUNT(DISTINCT(BR.BIDDING_ID))
+        FROM TT_BID_RESULT
+        WHERE FINAL_PRICE > 0
+        AND COMPANY_ID = C.COMPANY_ID
+        AND BIDDING_ID = BR.BIDDING_ID) NUM,
+
+        NVL(SUM(BR.FINAL_PRICE), 0) PRICE
+
+        FROM TT_BID_RESULT  BR,
+        TT_BID_ROUTE   R,
+        TT_BIDDING     B,
+        TT_BID_PLAN    BP,
+        TT_BID_COMPANY C
+       <where>
+           <include refid="bidPeParam"/>
+       </where>
+        GROUP BY
+        <if test='p.type =="groups"'>
+            C.COMPANY_ID, BR.BIDDING_ID, C.GROUPS
+        </if>
+        <if test='p.type =="company"'>
+            C.COMPANY_ID, BR.BIDDING_ID, C.COMPANY_NAME
+        </if>
+        <if test='p.type =="bidding"'>
+            C.COMPANY_ID,C.COMPANY_NAME, BR.BIDDING_ID,B.BIDDING_NAME,B.ROUTE_ID
+        </if>
+       )
+        GROUP BY NAME
+        <if test='p.type !="bidding"'>
+        ORDER BY ROUND(SUM(NUM) / COUNT(BIDDING_ID) * 100, 2) DESC
+        </if>
+        <if test='p.type =="bidding"'>
+            ,ROUTENAME
+            ORDER BY TOTAL DESC
+        </if>
+       <!-- SELECT
+        <if test='p.type =="groups"'>
+            (CASE WHEN INSTR(C.GROUPS,'集团', 1) > 0 OR  INSTR(C.GROUPS,'信号', 1)>0 OR  INSTR(C.GROUPS,'腾达', 1)>0 OR  INSTR(C.GROUPS,'宏润', 1)>0  THEN C.GROUPS ELSE '其他' END) NAME,
+        </if>
+        <if test='p.type =="company"'>
+            C.COMPANY_NAME NAME,
+        </if>
+        <if test='p.type =="bidding"'>
+            B.BIDDING_NAME NAME,
+            (SELECT ROUTE_NAME FROM TT_BID_ROUTE WHERE ROUTE_ID=B.ROUTE_ID) ROUTENAME,
+        </if>
+        COUNT(BR.BID_RESULT_ID) TOTAL,
+        NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0) COMPLETED,
+        NVL(SUM(BR.FINAL_PRICE),0) PRICE,
+        ROUND(NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0)/COUNT(BR.BID_RESULT_ID)*100,2)||'%' RATIO
+        FROM TT_BID_RESULT BR
+        INNER JOIN TT_BID_COMPANY C
+        ON C.COMPANY_ID = BR.COMPANY_ID
+        INNER JOIN TT_BID_PLAN BP
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        INNER JOIN TT_BIDDING B
+        ON BP.BIDDING_ID = B.BIDDING_ID
+        <where> <include refid="bidPeParam"/></where>
+        GROUP BY
+        <if test='p.type =="groups"'>
+            (CASE WHEN INSTR(C.GROUPS,'集团', 1) > 0 OR  INSTR(C.GROUPS,'信号', 1)>0 OR  INSTR(C.GROUPS,'腾达', 1)>0 OR  INSTR(C.GROUPS,'宏润', 1)>0 THEN C.GROUPS ELSE '其他' END)
+            ORDER BY (ROUND(NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0)/COUNT(BR.BID_RESULT_ID)*100,2)) DESC,COUNT(BR.BID_RESULT_ID) DESC,NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0) DESC
+        </if>
+        <if test='p.type =="company"'>
+            C.COMPANY_NAME
+            ORDER BY (ROUND(NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0)/COUNT(BR.BID_RESULT_ID)*100,2)) DESC,COUNT(BR.BID_RESULT_ID) DESC,NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0) DESC
+        </if>
+        <if test='p.type =="bidding"'>
+            B.BIDDING_NAME, B.ROUTE_ID
+            ORDER BY  COUNT(C.COMPANY_ID) DESC,COUNT(BR.BID_RESULT_ID) DESC,NVL(SUM(CASE WHEN NVL(BR.FINAL_PRICE, 0) > 0 THEN 1 END),0) DESC
+        </if>-->
+    </select>
+
+    <!--<select id="countBidByType" resultMap="bidMap">
+        SELECT
+        NVL(SUBSTR(B.BIDDING_TYPE_ID, 0, 1),'') NAME,
+        COUNT(C.COMPANY_ID) TOTAL
+        FROM TT_BID_RESULT BR
+        INNER JOIN TT_BID_COMPANY C
+        ON C.COMPANY_ID = BR.COMPANY_ID
+        INNER JOIN TT_BID_PLAN BP
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        INNER JOIN TT_BIDDING B
+        ON BP.BIDDING_ID = B.BIDDING_ID
+        <where> <include refid="bidPeParam"/></where>
+        GROUP BY SUBSTR(B.BIDDING_TYPE_ID, 0, 1) ORDER BY  COUNT(C.COMPANY_ID) DESC
+    </select>-->
+    <select id="selectBidPlan" resultMap="planMap">
+        SELECT *
+        FROM (SELECT DISTINCT P.BIDDING_PLAN_ID,
+        CASE
+        WHEN NVL(P.TEC_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) > NVL(P.BIZ_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) THEN
+        P.TEC_APPRAISE_DATE
+        ELSE
+        P.BIZ_APPRAISE_DATE
+        END BID_TIME,
+        P.BIDDING_TYPE_ID,
+        P.BIDDING_TYPE,
+        P.ROUTE_NAME,
+        P.BIDDING_NAME,
+        C.COMPANY_NAME,
+        (SELECT SUM(FINAL_PRICE)
+        FROM TT_BID_RESULT
+        WHERE BIDDING_PLAN_ID = PR.EXECUTE_ID) FINAL_PRICE
+        FROM TT_BID_PLAN              P,
+        TT_EXECUTE_PLAN_RELATION PR,
+        TT_BIDDING               B,
+
+        TT_BID_COMPANY C,
+        TT_BID_RESULT  BR,
+
+        TT_BID_ROUTE R
+        WHERE P.BIDDING_PLAN_ID = PR.EXECUTE_ID
+
+        AND P.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        AND BR.COMPANY_ID = C.COMPANY_ID
+
+        AND B.BIDDING_ID = PR.PLAN_ID
+        AND B.ROUTE_ID = R.ROUTE_ID
+        AND P.REMOVED = '0'
+        AND BR.FINAL_PRICE > 0)
+
+        <where>
+            <if test="beginDate!=null">
+                and BID_TIME >= TRUNC(#{beginDate}, 'DD')
+            </if>
+            <if test="endDate!=null">
+                and BID_TIME &lt;= TRUNC(#{endDate}, 'DD')
+            </if>
+        </where>
+
+
+        ORDER BY BID_TIME DESC
+    </select>
+
+    <select id="countOpenBidNumList" resultMap="bidMap">
+        SELECT NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5) NAME,COUNT(1) BIDDING_NUM
+        FROM TT_BID_PLAN BP
+        WHERE
+        BP.REMOVED = '0'
+        <if test="beginDate !=null">
+            AND BP.${type} >= TRUNC(#{beginDate}, 'DD')
+        </if>
+        <if test="endDate != null">
+            AND BP.${type} &lt;= TRUNC(#{endDate}, 'DD')
+        </if>
+        GROUP BY NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5) ORDER BY NVL(SUBSTR(BP.BIDDING_TYPE_ID, 0, 1),5)
+
+    </select>
+
+    <select id="countBidNumByType" resultMap="bidMap">
+        SELECT count(1) BIDDING_NUM , NVL(SUBSTR(BIDDING_TYPE_ID, 0, 1),5) NAME
+        FROM (SELECT DISTINCT P.BIDDING_PLAN_ID,
+
+        P.BIDDING_TYPE_ID,
+        P.BIDDING_TYPE,
+        P.ROUTE_NAME,
+        CASE
+        WHEN NVL(P.TEC_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) > NVL(P.BIZ_APPRAISE_DATE,TO_DATE('1970-01-01','YYYY-MM-DD')) THEN
+        P.TEC_APPRAISE_DATE
+        ELSE
+        P.BIZ_APPRAISE_DATE
+        END BID_TIME,
+        P.BIDDING_NAME
+        FROM TT_BID_PLAN              P,
+        TT_EXECUTE_PLAN_RELATION PR,
+        TT_BIDDING               B,
+
+        TT_BID_COMPANY C,
+        TT_BID_RESULT  BR,
+
+        TT_BID_ROUTE R
+        WHERE P.BIDDING_PLAN_ID = PR.EXECUTE_ID
+
+        AND P.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID
+        AND BR.COMPANY_ID = C.COMPANY_ID
+
+        AND B.BIDDING_ID = PR.PLAN_ID
+        AND B.ROUTE_ID = R.ROUTE_ID
+        AND P.REMOVED = '0'
+
+        AND BR.FINAL_PRICE > 0)
+        <where>
+            <if test="beginDate!=null">
+                and BID_TIME >= TRUNC(#{beginDate}, 'DD')
+            </if>
+            <if test="endDate!=null">
+                and BID_TIME &lt;= TRUNC(#{endDate}, 'DD')
+            </if>
+            <if test="type!=null and type!=''">
+                and BIDDING_TYPE_ID like '${type}'||'%'
+            </if>
+        </where>
+        GROUP BY NVL(SUBSTR(BIDDING_TYPE_ID, 0, 1),5) ORDER BY NVL(SUBSTR(BIDDING_TYPE_ID, 0, 1),5)
+    </select>
+
+    <select id="countOpenBidNum" resultType="java.lang.Integer">
+          SELECT COUNT(1)
+        FROM TT_BID_PLAN P
+        WHERE P.REMOVED= '0'
+       <!-- AND B.REMOVED= '0'-->
+                 <if test="beginDate !=null">
+                     AND P.${type} >= TRUNC(#{beginDate}, 'DD'yi)
+                 </if>
+                 <if test="endDate != null">
+                     AND P.${type} &lt;= TRUNC(#{endDate}, 'DD')
+                 </if>
+    </select>
+
+
+</mapper>

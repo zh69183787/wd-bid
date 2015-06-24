@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidCompanyDao">
+    <resultMap type="BidCompany" id="companyMap">
+        <id property="companyId" column="COMPANY_ID"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="groups" column="GROUPS"/>
+        <result property="trade" column="TRADE"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <collection property="bidResultList" ofType="BidResult">
+            <id property="bidResultId" column="BID_RESULT_ID"/>
+            <result property="prePrice" column="PRE_PRICE"/>
+            <result property="finalPrice" column="FINAL_PRICE"/>
+            <result property="biddingPlanId" column="BIDDING_PLAN_ID"/>
+            <result property="companyId" column="COMPANY_ID"/>
+        </collection>
+    </resultMap>
+    
+    <insert id="insert" parameterType="com.wonders.stpt.bid.domain.BidCompany">
+    	insert into TT_BID_COMPANY(
+    		COMPANY_ID,COMPANY_NAME,GROUPS,TRADE,CREATE_TIME,UPDATE_TIME,
+        CREATOR,
+        UPDATER,REMOVED
+    	)values(
+        SYS_GUID(),#{companyName,jdbcType=VARCHAR},
+        #{groups,jdbcType=VARCHAR},#{trade,jdbcType=VARCHAR},sysdate,sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},#{removed,jdbcType=CHAR}
+        )
+    </insert>
+    <update id="update" parameterType="com.wonders.stpt.bid.domain.BidCompany">
+    	update TT_BID_COMPANY
+    	<set>
+            COMPANY_NAME=#{companyName,jdbcType=VARCHAR},
+           GROUPS=#{groups,jdbcType=VARCHAR},
+            TRADE=#{trade,jdbcType=VARCHAR},
+        	<if test="removed != null and removed != '' ">REMOVED=#{removed,jdbcType=CHAR},</if>
+            <if test="updater != null and updater != ''" >UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            UPDATE_TIME=sysdate
+       </set>
+        <where>
+            COMPANY_ID=#{companyId,jdbcType=VARCHAR}
+        </where>
+    </update>
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BID_COMPANY where COMPANY_ID=#{id}
+    </delete>
+
+    <!--<select id="selectGroups" resultType="java.lang.String">-->
+        <!--SELECT GROUPS FROM TT_BID_COMPANY WHERE REMOVED = '0' AND GROUPS IS NOT NULL  GROUP BY GROUPS;-->
+    <!--</select>-->
+
+    <select id="select" resultMap="companyMap">
+        SELECT * FROM TT_BID_COMPANY WHERE REMOVED='0'
+        <if test="company.companyId!=null and company.companyId!=''">
+            and COMPANY_ID=#{company.companyId}
+        </if>
+        <if test="company.groups!=null and company.groups!=''">
+            and GROUPS like '%'||'${company.groups}'||'%'
+        </if>
+        <if test="company.trade!=null and company.trade!=''">
+            and TRADE like '%'||'${company.trade}'||'%'
+        </if>
+        <if  test="company.companyName!=null and company.companyName!=''">
+        	and COMPANY_NAME like '%'||'${company.companyName}'||'%'
+        </if>
+
+        <if test="company.creator!=null and company.creator!=''">
+            and CREATOR=#{company.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="company.updater!=null and company.updater!=''">
+            and UPDATER=#{company.updater,jdbcType=VARCHAR}
+        </if>
+        ORDER BY UPDATE_TIME DESC;
+    </select>
+    <select id="selectAll" resultMap="companyMap">
+		select * from TT_BID_COMPANY where REMOVED=1 ORDER BY CREATE_TIME DESC , COMPANY_NAME;
+	</select>
+
+	<select id="selectById" parameterType="java.lang.String" resultMap="companyMap">
+		select * from TT_BID_COMPANY where COMPANY_ID=#{id}
+	</select>
+</mapper>

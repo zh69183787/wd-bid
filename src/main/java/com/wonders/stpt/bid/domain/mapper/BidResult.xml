@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidResultDao">
+    <resultMap type="BidResult" id="bidResultMap">
+        <id property="bidResultId" column="BID_RESULT_ID"/>
+        <result property="prePrice" column="PRE_PRICE"/>
+        <result property="finalPrice" column="FINAL_PRICE"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="biddingPlanId" column="BIDDING_PLAN_ID"/>
+        <result property="totalPrice" column="TOTAL_PRICE"/>
+        <result property="biddingId" column="BIDDING_ID"/>
+        <result property="isApplicant" column="IS_APPLICANT"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <association property="company" javaType="BidCompany">
+            <id property="companyId" column="COMPANY_ID"/>
+            <result property="companyName" column="COMPANY_NAME"/>
+            <result property="groups" column="GROUPS"/>
+            <result property="trade" column="TRADE"/>
+        </association>
+        <association property="bidPlan" javaType="BidPlan">
+            <id property="bidPlanId" column="BID_PLAN_ID"/>
+            <association property="bidding" javaType="Bidding">
+                <id property="biddingId" column="BIDDING_ID"/>
+                <result property="biddingName" column="BIDDING_NAME"/>
+                <result property="biddingType" column="BIDDING_TYPE"/>
+                <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+                <result property="routeId" column="ROUTE_ID"/>
+                <result property="createTime" column="CREATE_TIME"/>
+                <result property="updateTime" column="UPDATE_TIME"/>
+                <result property="creator" column="CREATOR"/>
+                <result property="updater" column="UPDATER"/>
+                <result property="removed" column="REMOVED"/>
+                <association property="route" javaType="Route">
+                    <id property="routeId" column="ROUTE_ID"/>
+                    <result property="routeName" column="ROUTE_NAME"/>
+                    <result property="routeType" column="ROUTE_TYPE"/>
+                    <result property="createTime" column="CREATE_TIME"/>
+                    <result property="updateTime" column="UPDATE_TIME"/>
+                    <result property="creator" column="CREATOR"/>
+                    <result property="updater" column="UPDATER"/>
+                    <result property="removed" column="REMOVED"/>
+                </association>
+            </association>
+
+        </association>
+    </resultMap>
+    <resultMap type="java.util.HashMap" id="summaryMap">
+        <result property="prePrice" column="PRE_PRICE"/>
+        <result property="finalPrice" column="FINAL_PRICE"/>
+        <result property="totalPrice" column="TOTAL_PRICE"/>
+        <result property="applyNum" column="APPLY_NUM"/>
+        <result property="biddingPlanId" column="BIDDING_PLAN_ID"/>
+        <result property="isApplicant" column="IS_APPLICANT"/>
+    </resultMap>
+    <resultMap type="java.util.HashMap" id="countAll">
+        <result property="prePrice" column="PRE_PRICE"/>
+        <result property="finalPrice" column="FINAL_PRICE"/>
+        <result property="applyNum" column="APPLY_NUM"/>
+        <result property="applyNums" column="APPLY_NUMS"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="groups" column="GROUPS"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="BidResult">
+         insert into TT_BID_RESULT(
+        BID_RESULT_ID,
+        COMPANY_ID,
+        BIDDING_PLAN_ID,
+        PRE_PRICE,
+        FINAL_PRICE,
+        IS_APPLICANT,
+        BIDDING_ID,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+        ) values(
+        SYS_GUID(),
+        #{companyId,jdbcType=VARCHAR},
+        #{biddingPlanId,jdbcType=VARCHAR},
+        #{prePrice,jdbcType=NUMERIC},
+        #{finalPrice,jdbcType=NUMERIC},
+        #{isApplicant,jdbcType=CHAR},
+        #{biddingId,jdbcType=CHAR},
+        sysdate,
+        sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+        #{removed,jdbcType=CHAR}
+        )
+	</insert>
+
+    <update id="update" parameterType="BidResult">
+        update TT_BID_RESULT
+        <set>
+            <if test="companyId != null and companyId != '' ">COMPANY_ID=#{companyId,jdbcType=VARCHAR},</if>
+            <if test="biddingPlanId != null and biddingPlanId != '' ">
+                BIDDING_PLAN_ID=#{biddingPlanId,jdbcType=VARCHAR},
+            </if> <if test="updater != null and updater != ''" >UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            PRE_PRICE=#{prePrice,jdbcType=NUMERIC},
+            FINAL_PRICE=#{finalPrice,jdbcType=NUMERIC},
+            IS_APPLICANT=#{isApplicant,jdbcType=CHAR},
+            BIDDING_ID=#{biddingId,jdbcType=CHAR},
+            <if test="removed != null and removed != ''">REMOVED=#{removed,jdbcType=CHAR},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            BID_RESULT_ID=#{bidResultId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <select id="countByPlanId" resultMap="summaryMap">
+        SELECT BIDDING_PLAN_ID,NVL(ROUND(SUM(PRE_PRICE) / DECODE(SUM((CASE
+        WHEN PRE_PRICE > 0 THEN
+        1
+        ELSE
+        0
+        END)),
+        0,
+        1,
+        SUM((CASE
+        WHEN PRE_PRICE > 0 THEN
+        1
+        ELSE
+        0
+        END))),
+        4),
+        0) PRE_PRICE,
+        NVL(SUM(TOTAL_PRICE), 0) TOTAL_PRICE,
+        COUNT(BIDDING_PLAN_ID) APPLY_NUM,
+        SUM(DECODE(IS_APPLICANT, '1', 1, 0)) IS_APPLICANT FROM (SELECT DISTINCT BIDDING_PLAN_ID,C.COMPANY_ID,PRE_PRICE,
+        C.GROUPS,
+        C.TRADE,
+        C.COMPANY_NAME,(SELECT SUM(FINAL_PRICE)
+        FROM TT_BID_RESULT R
+        WHERE R.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID AND R.COMPANY_ID=BR.COMPANY_ID
+        GROUP BY R.COMPANY_ID,R.BIDDING_PLAN_ID) TOTAL_PRICE,IS_APPLICANT FROM TT_BID_RESULT BR,TT_BID_COMPANY C WHERE
+        BR.REMOVED='0' AND C.COMPANY_ID = BR.COMPANY_ID)
+        <where>
+            1=1
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and COMPANY_ID=#{bidResult.companyId}
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and GROUPS=#{bidResult.company.groups}
+        </if>
+
+            <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+                and TRADE like '%'||'${bidResult.company.trade}'||'%'
+            </if>
+
+        <if test="biddingPlanIds!=null">
+            and BIDDING_PLAN_ID IN
+            <foreach item="item" index="index" collection="biddingPlanIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+ GROUP BY BIDDING_PLAN_ID
+    </select>
+
+    <select id="select" resultMap="bidResultMap">
+        SELECT C.COMPANY_NAME,
+        NVL(C.GROUPS,' ') GROUPS,<!-- 如果字段值为null则返回后一个值，否则返回原值 -->
+        BR.BID_RESULT_ID,  DECODE(BR.IS_APPLICANT,'0','未通过','1','通过',' ') IS_APPLICANT,
+        NVL(BR.PRE_PRICE,0) PRE_PRICE,
+        NVL(BR.FINAL_PRICE,0) FINAL_PRICE,
+        BIDDING_ID,
+        BR.COMPANY_ID,
+        BR.BIDDING_PLAN_ID,
+        (SELECT SUM(FINAL_PRICE)
+        FROM TT_BID_RESULT R
+        WHERE R.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID AND R.COMPANY_ID=BR.COMPANY_ID
+        GROUP BY R.COMPANY_ID,R.BIDDING_PLAN_ID) TOTAL_PRICE
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID
+        WHERE
+        BR.REMOVED='0'
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS=#{bidResult.company.groups}
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and TRADE like '%'||'${bidResult.company.trade}'||'%'
+        </if>
+        <if test="bidResult.finalPrice!=null and bidResult.finalPrice>0">
+            and	 BR.FINAL_PRICE > 0
+        </if>
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.biddingId!=null and bidResult.biddingId!=''">
+            and BIDDING_ID=#{bidResult.biddingId,jdbcType=VARCHAR}
+        </if>
+        <if test="biddingPlanIds!=null">
+            and BR.BIDDING_PLAN_ID IN
+            <foreach item="item" index="index" collection="biddingPlanIds"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectResults" resultMap="bidResultMap">
+        SELECT C.COMPANY_NAME,
+        NVL(C.GROUPS,' ') GROUPS,BR.IS_APPLICANT,
+        BR.BID_RESULT_ID,
+        NVL(BR.PRE_PRICE,0) PRE_PRICE,
+        NVL(BR.FINAL_PRICE,0) FINAL_PRICE,
+        BR.COMPANY_ID,
+        BR.BIDDING_PLAN_ID,B.BIDDING_NAME,R.ROUTE_NAME
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID LEFT JOIN TT_BID_PLAN BP ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID LEFT JOIN TT_BIDDING B ON BR.BIDDING_ID = B.BIDDING_ID
+        LEFT JOIN TT_BID_ROUTE R ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE
+        BR.REMOVED='0'
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS=#{bidResult.company.groups}
+        </if>
+
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and c.TRADE like '%'||'${bidResult.company.trade}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.finalPrice!=null and bidResult.finalPrice>0">
+            and	 BR.FINAL_PRICE > 0
+        </if>
+        <if test="bidResult.prePrice!=null and bidResult.prePrice>0">
+            and	 BR.PRE_PRICE > 0
+        </if>
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+	<!-- 根据单位分组查询所有记录 -->
+	<select id="selectByGroupC" resultMap="bidResultMap">
+		SELECT C.COMPANY_NAME,
+        C.TRADE,
+        LTRIM(NVL(C.GROUPS,' ')) GROUPS,
+        BR.BID_RESULT_ID,
+        NVL(BR.PRE_PRICE,0) PRE_PRICE,
+        NVL(BR.FINAL_PRICE,0) FINAL_PRICE,
+        BR.COMPANY_ID,
+        BR.BIDDING_PLAN_ID,
+        B.BIDDING_NAME,
+        R.ROUTE_NAME
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID LEFT JOIN TT_BID_PLAN BP 
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID LEFT JOIN TT_BIDDING B 
+        ON BR.BIDDING_ID = B.BIDDING_ID
+        LEFT JOIN TT_BID_ROUTE R ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE
+        BR.REMOVED='0' AND BR.PRE_PRICE>0
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+
+        <if test="bidResult.bidPlan!=null and bidResult.bidPlan.bidding!=null and bidResult.bidPlan.bidding.biddingName!=''">
+            and	 B.BIDDING_NAME like '${bidResult.bidPlan.bidding.biddingName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and C.TRADE like '%'||'${bidResult.company.trade}'||'%'   <!-- =#{bidResult.company.groups} -->
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS like '%'||'${bidResult.company.groups}'||'%'   <!-- =#{bidResult.company.groups} -->
+        </if>
+        <if test="bidResult!=null and bidResult.finalPrice>0">
+            and BR.FINAL_PRICE >0  <!-- =#{bidResult.company.groups} -->
+        </if>
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+        ORDER BY C.GROUPS,C.COMPANY_NAME,BR.FINAL_PRICE,R.ROUTE_NAME,B.BIDDING_NAME
+	</select>
+	<!-- 统计所有数据 -->
+	<select id="countAll" resultMap="countAll">
+	SELECT 
+        NVL(SUM(BR.PRE_PRICE),0) PRE_PRICE,
+        NVL(SUM(BR.FINAL_PRICE),0) FINAL_PRICE,
+        COUNT(BR.PRE_PRICE) APPLY_NUM,
+        SUM(CASE WHEN FINAL_PRICE>0 THEN 1 ELSE 0 END) APPLY_NUMS
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID LEFT JOIN TT_BID_PLAN BP 
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID LEFT JOIN TT_BIDDING B 
+        ON BR.BIDDING_ID = B.BIDDING_ID
+        LEFT JOIN TT_BID_ROUTE R ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE
+        BR.REMOVED='0' AND BR.PRE_PRICE>0
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+
+        <if test="bidResult.bidPlan!=null and bidResult.bidPlan.bidding!=null and bidResult.bidPlan.bidding.biddingName!=''">
+            and	 B.BIDDING_NAME like '${bidResult.bidPlan.bidding.biddingName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS like '%'||'${bidResult.company.groups}'||'%'   <!-- =#{bidResult.company.groups} -->
+        </if>
+
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and c.TRADE like '%'||'${bidResult.company.trade}'||'%'
+        </if>
+        <if test="bidResult!=null and bidResult.finalPrice>0">
+            and BR.FINAL_PRICE >0  <!-- =#{bidResult.company.groups} -->
+        </if>
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+	</select>
+	<!-- 分组统计 -->
+	<select id="countGroup" resultMap="countAll">
+	SELECT 
+        NVL(SUM(BR.PRE_PRICE),0) PRE_PRICE,
+        NVL(SUM(BR.FINAL_PRICE),0) FINAL_PRICE,
+        COUNT(BR.PRE_PRICE) APPLY_NUM,
+        SUM(CASE WHEN FINAL_PRICE>0 THEN 1 ELSE 0 END) APPLY_NUMS,
+       <!--  BR.COMPANY_ID COMPANY_ID , -->
+       <!--  <if test="type=='0'">根据单位名称统计 -->
+        C.COMPANY_NAME COMPANY_NAME
+        <!-- </if>
+        <if test="type=='1'">根据集团名称统计
+        C.GROUPS GROUPS
+        </if> -->
+        
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID LEFT JOIN TT_BID_PLAN BP 
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID LEFT JOIN TT_BIDDING B 
+        ON B.BIDDING_ID = BR.BIDDING_ID
+        LEFT JOIN TT_BID_ROUTE R ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE
+        BR.REMOVED='0' AND BR.PRE_PRICE>0
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+
+        <if test="bidResult.bidPlan!=null and bidResult.bidPlan.bidding!=null and bidResult.bidPlan.bidding.biddingName!=''">
+            and	 B.BIDDING_NAME like '${bidResult.bidPlan.bidding.biddingName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS like '%'||'${bidResult.company.groups}'||'%'   <!-- =#{bidResult.company.groups} -->
+        </if>
+
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and c.TRADE like '%'||'${bidResult.company.trade}'||'%'
+        </if>
+        <if test="bidResult!=null and bidResult.finalPrice>0">
+            and BR.FINAL_PRICE >0  <!-- =#{bidResult.company.groups} -->
+        </if>
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+        <!-- <if test="type=='0'">根据单位名称统计 -->
+        GROUP BY C.GROUPS, C.COMPANY_NAME
+        <!-- </if>
+        <if test="type=='1'">根据集团名称统计
+        GROUP BY C.GROUPS,BR.COMPANY_ID
+        </if> -->
+        ORDER BY C.GROUPS,C.COMPANY_NAME
+	</select>
+
+	<!-- 分组统计 -->
+	<select id="countGroups" resultMap="countAll">
+	SELECT 
+        NVL(SUM(BR.PRE_PRICE),0) PRE_PRICE,
+        NVL(SUM(BR.FINAL_PRICE),0) FINAL_PRICE,
+        COUNT(BR.PRE_PRICE) APPLY_NUM,
+        SUM(CASE WHEN FINAL_PRICE>0 THEN 1 ELSE 0 END) APPLY_NUMS,
+       <!--  BR.COMPANY_ID COMPANY_ID , -->
+       <!--  <if test="type=='0'">根据单位名称统计 -->
+       <!--  C.COMPANY_NAME COMPANY_NAME -->
+        <!-- </if>
+        <if test="type=='1'">根据集团名称统计
+        C.GROUPS GROUPS
+        </if> -->
+        C.GROUPS GROUPS
+        FROM TT_BID_RESULT BR LEFT JOIN TT_BID_COMPANY C
+        ON BR.COMPANY_ID = C.COMPANY_ID LEFT JOIN TT_BID_PLAN BP 
+        ON BP.BIDDING_PLAN_ID = BR.BIDDING_PLAN_ID LEFT JOIN TT_BIDDING B 
+        ON B.BIDDING_ID = BR.BIDDING_ID
+        LEFT JOIN TT_BID_ROUTE R ON R.ROUTE_ID = B.ROUTE_ID
+        WHERE
+        BR.REMOVED='0' AND BR.PRE_PRICE>0
+        <if test="bidResult.companyId!=null and bidResult.companyId!=''">
+            and C.COMPANY_ID=#{bidResult.companyId}
+        </if>
+
+        <if test="bidResult.creator!=null and bidResult.creator!=''">
+            and CREATOR=#{bidResult.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.updater!=null and bidResult.updater!=''">
+            and UPDATER=#{bidResult.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="bidResult.bidPlan!=null and bidResult.bidPlan.bidding!=null and bidResult.bidPlan.bidding.biddingName!=''">
+            and	 B.BIDDING_NAME like '${bidResult.bidPlan.bidding.biddingName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.companyName!=null and bidResult.company.companyName!=''">
+            and	 C.COMPANY_NAME like '%'||'${bidResult.company.companyName}'||'%'
+        </if>
+        <if test="bidResult.company!=null and bidResult.company.groups!=null and bidResult.company.groups!=''">
+            and C.GROUPS like '%'||'${bidResult.company.groups}'||'%'   <!-- =#{bidResult.company.groups} -->
+        </if>
+
+        <if test="bidResult.company!=null and bidResult.company.trade!=null and bidResult.company.trade!=''">
+            and c.TRADE like '%'||'${bidResult.company.trade}'||'%'
+        </if>
+        <if test="bidResult!=null and bidResult.finalPrice>0">
+            and BR.FINAL_PRICE >0  <!-- =#{bidResult.company.groups} -->
+        </if>
+        <!-- <if test="type=='0'">根据单位名称统计 -->
+        <!-- GROUP BY  C.COMPANY_NAME,BR.COMPANY_ID -->
+        <!-- </if>
+        <if test="type=='1'">根据集团名称统计
+        GROUP BY C.GROUPS,BR.COMPANY_ID
+        </if> -->
+        GROUP BY C.GROUPS
+        ORDER BY C.GROUPS
+	</select>
+
+</mapper>

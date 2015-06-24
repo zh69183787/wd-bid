@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidChangeDao" >
+    <resultMap type="BidChange" id="bidChangeMap">
+        <id property="bidChangeId" column="BID_CHANGE_ID"/>
+        <result property="version" column="VERSION"/>
+        <result property="type" column="TYPE"/>
+        <result property="content" column="CONTENT"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="removed" column="REMOVED"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="biddingIdList" column="BIDDING_ID_LIST"/>
+       
+        <association property="bidding" javaType="Bidding" resultMap="com.wonders.stpt.bid.dao.BiddingDao.biddingMap">
+
+        </association>
+    </resultMap>
+    <insert id="insert" parameterType="BidChange">
+		insert into TT_BID_CHANGE(
+        BID_CHANGE_ID,
+        VERSION,
+        TYPE,
+        CONTENT,
+        CREATE_TIME,
+        UPDATE_TIME,
+        REMOVED,
+        CREATOR,
+        UPDATER,
+        BIDDING_ID,
+        BIDDING_ID_LIST
+		) values(
+        SYS_GUID(),
+			(SELECT CASE WHEN COUNT(1)=0 THEN COUNT(1)+1 ELSE MAX(VERSION)+1 END NUM FROM TT_BID_CHANGE WHERE BIDDING_ID=#{bidding.biddingId,jdbcType=VARCHAR}),
+			#{type,jdbcType=CHAR},
+            #{content,jdbcType=VARCHAR},
+			sysdate,
+			#{updateTime,jdbcType=DATE},
+			'0',
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},  
+			#{bidding.biddingId,jdbcType=CHAR},
+			#{biddingIdList,jdbcType=VARCHAR}
+		)
+	</insert>
+    <update id="update" parameterType="BidChange">
+        update TT_BID_CHANGE
+        <set>
+            <if test="version != null and version != '' ">VERSION=#{version,jdbcType=NUMERIC},</if>
+            <if test="type != null and type != '' ">TYPE=#{type,jdbcType=CHAR},</if>
+            <if test="content != null and content != '' ">CONTENT=#{content,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != '' ">REMOVED=#{removed,jdbcType=CHAR},</if>
+            <if test="bidding.biddingId != null and bidding.biddingId != '' ">BIDDING_ID=#{bidding.biddingId,jdbcType=CHAR},</if>
+            <if test="biddingIdList != null and biddingIdList != '' ">BIDDING_ID_LIST=#{biddingIdList,jdbcType=VARCHAR},</if>
+            <if test="updateTime != null and updateTime != '' ">UPDATE_TIME=#{updateTime,jdbcType=DATE},</if>
+        </set>
+        <where>
+            BID_CHANGE_ID=#{bidChangeId,jdbcType=CHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BID_CHANGE where BID_CHANGE_ID=#{id}
+    </delete>
+
+
+    <select id="select" resultMap="bidChangeMap" parameterType="BidChange">
+        SELECT BID_CHANGE_ID,VERSION,DECODE(TYPE,'1','招标内容有变化','2','标段合并','3','标段拆分','4','进度有调整') TYPE,CONTENT,CREATE_TIME,UPDATE_TIME,BIDDING_ID,BIDDING_ID_LIST FROM TT_BID_CHANGE  WHERE  REMOVED='0'
+        <if test="bidChange.version!=null and  bidChange.version!=''">
+            and	 VERSION = #{bidChange.version,jdbcType=NUMERIC}
+        </if>
+        <if test="bidChange.type!=null and  bidChange.type!=''">
+            and	 TYPE = #{bidChange.type,jdbcType=CHAR}
+        </if>
+        <if test="bidChange.content!=null and  bidChange.content!=''">
+            and	 CONTENT = #{bidChange.content,jdbcType=VARCHAR}
+        </if>
+        <if test="bidChange.bidding!=null and bidChange.bidding.biddingId!=null and  bidChange.bidding.biddingId!=''">
+            and	 BIDDING_ID = #{bidChange.bidding.biddingId}
+        </if>
+       
+        <if test="bidChange.biddingIdList!=null and  bidChange.biddingIdList!=''">
+            and	 BIDDING_ID_LIST = #{bidChange.biddingIdList,jdbcType=VARCHAR}
+        </if>
+        ORDER BY UPDATE_TIME DESC;
+    </select>
+
+    <select id="selectAll" resultMap="bidChangeMap">
+		select * from TT_BID_CHANGE where REMOVED=0 ;
+	
+	</select>
+
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="bidChangeMap">
+        select * from TT_BID_CHANGE  where BID_CHANGE_ID=#{id}
+    </select>
+
+</mapper>  

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidImportDao">
+    <resultMap type="BidImport" id="bidImportMap">
+        <id property="biddingId" column="BIDDING_ID"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="routeName" column="ROUTE_NAME"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <result property="state" column="STATE"/>
+
+        <result property="bidType" column="BID_TYPE"/>
+        <result property="biddingNo" column="BIDDING_NO"/>
+        <result property="serialNo" column="SERIAL_NO"/>
+        <result property="fileEndDate" column="FILE_END_DATE"/>
+        <result property="appraiseDate" column="APPRAISE_DATE"/>
+        
+        <result property="isUpdate" column="IS_UPDATE"/>
+        <result property="ubiddingId" column="UBIDDING_ID"/>
+        <result property="belongDate" column="BELONG_DATE"/>
+        <result property="typeOne" column="TYPE_ONE"/>
+        <result property="typeTwo" column="TYPE_TWO"/>
+        <result property="typeThree" column="TYPE_THREE"/>
+        <result property="typeFour" column="TYPE_FOUR"/>
+ 		<result property="mainId" column="MAIN_ID"/>
+ 		<result property="urouteId" column="UROUTE_ID"/>
+ 		<result property="ubiddingTypeId" column="UTYPE_ID"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.wonders.stpt.bid.domain.BidImport">
+		insert into TT_BIDDING_IMPORT(
+        BIDDING_ID,
+        BIDDING_NAME,
+        ROUTE_NAME,
+        BID_TYPE,
+        BIDDING_NO,
+        APPRAISE_DATE,
+        FILE_END_DATE,
+        SERIAL_NO,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED,
+        STATE,
+        IS_UPDATE,
+        UBIDDING_ID,
+        BELONG_DATE,
+        TYPE_ONE,
+        TYPE_TWO,
+        TYPE_THREE,
+        TYPE_FOUR,
+        MAIN_ID,
+        UTYPE_ID,
+        UROUTE_ID
+		) values(
+       		 SYS_GUID(),
+			#{biddingName,jdbcType=VARCHAR},
+			#{routeName,jdbcType=VARCHAR},
+
+			#{bidType,jdbcType=VARCHAR},
+			#{biddingNo,jdbcType=VARCHAR},
+			#{appraiseDate,jdbcType=DATE},
+			#{fileEndDate,jdbcType=DATE},
+
+           <!-- (select max(to_number(nvl(SERIAL_NO,'0')))+1 from TT_BIDDING_IMPORT B where  B.ROUTE_ID=#{routeId,jdbcType=VARCHAR}), -->
+         	#{serialNo,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+			#{removed,jdbcType=CHAR},
+			#{state,jdbcType=CHAR},
+			#{isUpdate,jdbcType=VARCHAR},
+			#{ubiddingId,jdbcType=VARCHAR},
+			#{belongDate,jdbcType=DATE},
+			#{typeOne,jdbcType=VARCHAR},
+			#{typeTwo,jdbcType=VARCHAR},
+			#{typeThree,jdbcType=VARCHAR},
+			#{typeFour,jdbcType=VARCHAR},
+			#{mainId,jdbcType=VARCHAR},
+			#{ubiddingTypeId,jdbcType=VARCHAR},
+			#{urouteId,jdbcType=VARCHAR}
+		)
+	</insert>
+    <update id="update" parameterType="com.wonders.stpt.bid.domain.BidImport">
+        update TT_BIDDING_IMPORT
+        <set>
+            <if test="biddingName != null and biddingName != '' ">BIDDING_NAME=#{biddingName,jdbcType=VARCHAR},</if>
+            <if test="routeName !=null and routeName !='' ">ROUTE_NAME=#{routeName,jdbcType=VARCHAR},</if>
+            <if test="updater != null and updater != ''">UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="creator != null and creator != ''">CREATOR=#{creator,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != ''">REMOVED=#{removed,jdbcType=CHAR},</if>
+            <if test="state != null and state != ''">STATE=#{state,jdbcType=CHAR},</if>
+            <if test="bidType != null and bidType != '' ">BID_TYPE=#{bidType,jdbcType=VARCHAR},</if>
+            <if test="biddingNo != null and biddingNo != '' ">BIDDING_NO=#{biddingNo,jdbcType=VARCHAR},</if>
+            APPRAISE_DATE=#{appraiseDate,jdbcType=DATE},
+            FILE_END_DATE=#{fileEndDate,jdbcType=DATE},
+			<if test="serialNo != null and serialNo != '' ">SERIAL_NO=#{serialNo,jdbcType=VARCHAR},</if>
+            <if test="createTime != null and createTime != '' ">CREATE_TIME=#{createTime,jdbcType=DATE},</if>
+            UPDATE_TIME=sysdate,
+            
+            <if test="isUpdate != null and isUpdate != '' ">IS_UPDATE=#{isUpdate,jdbcType=VARCHAR},</if>
+            <if test="ubiddingId !=null and ubiddingId !='' ">UBIDDING_ID=#{ubiddingId,jdbcType=VARCHAR},</if>
+            <if test="belongDate != null and belongDate != ''">BELONG_DATE=#{belongDate,jdbcType=DATE},</if>
+            <if test="typeOne != null and typeOne != '' ">TYPE_ONE=#{typeOne,jdbcType=VARCHAR},</if>
+            <if test="typeTwo != null and typeTwo != '' ">TYPE_TWO=#{typeTwo,jdbcType=VARCHAR},</if>
+            <if test="typeThree != null and typeThree != '' ">TYPE_THREE=#{typeThree,jdbcType=VARCHAR},</if>
+			<if test="typeFour != null and typeFour != '' ">TYPE_FOUR=#{typeFour,jdbcType=VARCHAR},</if>
+			<if test="mainId != null and mainId != '' ">MAIN_ID=#{mainId,jdbcType=VARCHAR},</if>
+			<if test="urouteId != null and urouteId != '' ">UROUTE_ID=#{urouteId,jdbcType=VARCHAR},</if>
+			<if test="ubiddingTypeId != null and ubiddingTypeId != '' ">UTYPE_ID=#{ubiddingTypeId,jdbcType=VARCHAR}</if>
+        </set>
+        <where>
+            BIDDING_ID=#{biddingId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BIDDING_IMPORT where BIDDING_ID=#{id}
+    </delete>
+    
+    <delete id="deleteByMainId" parameterType="java.lang.String">
+        delete from TT_BIDDING_IMPORT where MAIN_ID=#{mainId}
+    </delete>
+
+
+    <select id="select" resultMap="bidImportMap" parameterType="com.wonders.stpt.bid.domain.BidImport">
+        SELECT BIDDING_ID,BIDDING_NAME,ROUTE_NAME,b.CREATOR,b.UPDATER,b.BID_TYPE,B.BIDDING_NO,B.SERIAL_NO,B.APPRAISE_DATE,B.FILE_END_DATE,
+       B.CREATE_TIME,B.UPDATE_TIME,b.IS_UPDATE,b.UBIDDING_ID,b.BELONG_DATE,b.TYPE_ONE,b.TYPE_TWO,b.TYPE_THREE,b.TYPE_FOUR,b.MAIN_ID,b.UROUTE_ID,b.UTYPE_ID,b.STATE   FROM
+        TT_BIDDING_IMPORT b  WHERE b.REMOVED=0
+
+        <if test="bidImportMap.biddingName!=null and  bidImportMap.biddingName!=''">
+            and BIDDING_NAME like '%'||'${bidImportMap.biddingName}'||'%'
+        </if>
+         <if test="bidImportMap.routeName!=null and bidImportMap.routeName!=''">
+            and b.BROUTE_NAME=#{bidImportMap.routeName,jdbcType=VARCHAR}
+        </if>
+        <if test="bidImportMap.removed!=null and bidImportMap.removed!=''">
+            and b.REMOVED=#{bidImportMap.removed,jdbcType=CHAR}
+        </if>
+        <if test="bidImportMap.state!=null and bidImportMap.state!=''">
+            and b.STATE=#{bidImportMap.state,jdbcType=CHAR}
+        </if>
+        <if test="bidImportMap.creator!=null and bidImportMap.creator!=''">
+            and b.CREATOR=#{bidImportMap.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidImportMap.updater!=null and bidImportMap.updater!=''">
+            and b.UPDATER=#{bidImportMap.updater,jdbcType=VARCHAR}
+        </if>
+         <if test="bidImportMap.appraiseDateBegin!=null and bidImportMap.appraiseDateBegin!=''">
+            and b.APPRAISE_DATE >= #{bidImportMap.appraiseDateBegin,jdbcType=DATE}
+        </if>
+        <if test="bidImportMap.appraiseDateEnd!=null and bidImportMap.appraiseDateEnd!=''">
+            and b.APPRAISE_DATE &lt;= #{bidImportMap.appraiseDateEnd,jdbcType=DATE}
+        </if>
+        <if test="bidImportMap.bidType != null and bidImportMap.bidType != '' ">and b.BID_TYPE=#{bidImportMap.bidType,jdbcType=VARCHAR}</if>
+       <!--  <if test="bidImportMap.appraiseDate != null and bidImportMap.appraiseDate != '' ">and b.APPRAISE_DATE=#{bidImportMap.appraiseDate,jdbcType=DATE}</if> -->
+        <if test="bidImportMap.fileEndDate != null and bidImportMap.fileEndDate != '' ">and b.FILE_END_DATE=#{bidImportMap.fileEndDate,jdbcType=DATE}</if>
+        <if test="bidImportMap.serialNo != null and bidImportMap.serialNo != '' ">and b.SERIAL_NO=#{bidImportMap.serialNo,jdbcType=VARCHAR}</if>
+		<if test="bidImportMap.biddingNo != null and bidImportMap.biddingNo != '' ">and b.BIDDING_NO like '%'||'${bidImportMap.biddingNo}'||'%'</if>
+        <if test="bidImportMap.createTime != null and bidImportMap.createTime != '' ">and b.CREATE_TIME=#{bidImportMap.createTime,jdbcType=DATE}</if>
+        <if test="bidImportMap.updateTime != null and bidImportMap.updateTime != '' ">and b.UPDATE_TIME=#{bidImportMap.updateTime,jdbcType=DATE}</if>
+        <if test="bidImportMap.isUpdate != null and bidImportMap.isUpdate != '' ">and b.IS_UPDATE=#{bidImportMap.isUpdate,jdbcType=VARCHAR}</if>
+        <if test="bidImportMap.belongDate != null and bidImportMap.belongDate != '' ">and b.BELONG_DATE=#{bidImportMap.belongDate,jdbcType=DATE}</if>
+        
+		<choose>
+		<when test="bidImportMap.fullTypeName != null and bidImportMap.fullTypeName != '' ">
+			<if test="bidImportMap.typeOne != null and bidImportMap.typeOne != '' ">and b.TYPE_ONE=#{bidImportMap.typeOne,jdbcType=VARCHAR}</if>
+	        <if test="bidImportMap.typeTwo != null and bidImportMap.typeTwo != '' ">and b.TYPE_TWO=#{bidImportMap.typeTwo,jdbcType=DATE}</if>
+	        <if test="bidImportMap.typeThree != null and bidImportMap.typeThree != '' ">and b.TYPE_THREE=#{bidImportMap.typeThree,jdbcType=VARCHAR}</if>
+	        <if test="bidImportMap.typeFour != null and bidImportMap.typeFour != '' ">and b.TYPE_FOUR=#{bidImportMap.typeFour,jdbcType=VARCHAR}</if>
+		</when>
+		<otherwise>
+		    <if test="bidImportMap.ubiddingId != null and bidImportMap.ubiddingId != '' ">and b.UBIDDING_ID=#{bidImportMap.ubiddingId,jdbcType=VARCHAR}</if>
+		</otherwise>
+		</choose>
+        
+        <if test="bidImportMap.mainId != null and bidImportMap.mainId != '' ">and b.MAIN_ID=#{bidImportMap.mainId,jdbcType=VARCHAR}</if>
+        ORDER BY to_number(b.SERIAL_NO) asc, b.UPDATE_TIME
+    </select>
+
+
+    <!-- 模糊匹配 -->
+    <select id="selectfuzzy" resultMap="bidImportMap" parameterType="com.wonders.stpt.bid.domain.BidImport">
+        SELECT BIDDING_ID,BIDDING_NAME,ROUTE_NAME,b.CREATOR,b.UPDATER,b.BID_TYPE,B.BIDDING_NO,B.SERIAL_NO,B.APPRAISE_DATE,B.FILE_END_DATE,BID_STATE,B.CREATE_TIME,B.UPDATE_TIME,
+        IS_COMPLETED,
+        COMPLETE_DATE FROM
+        TT_BIDDING_IMPORT b,TT_BID_ROUTE r WHERE b.ROUTE_ID=r.ROUTE_ID and b.REMOVED=0
+
+        <if test="bidImportMap.biddingName!=null and  bidImportMap.biddingName!=''">
+            and BIDDING_NAME like '%'||'${bidImportMap.bidImportMapName}'||'%'
+        </if>
+        <if test="bidImportMap.removed!=null and bidImportMap.removed!=''">
+            and REMOVED=#{bidImportMap.removed,jdbcType=CHAR}
+        </if>
+        <if test="bidImportMap.creator!=null and bidImportMap.creator!=''">
+            and CREATOR=#{route.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidImportMap.updater!=null and bidImportMap.updater!=''">
+            and UPDATER=#{route.updater,jdbcType=VARCHAR}
+        </if>
+
+        and BID_STATE='1'
+        ORDER BY b.UPDATE_TIME DESC, b.BIDDING_NAME
+    </select>
+
+    <select id="selectAll" resultMap="bidImportMap">
+		select * from TT_BIDDING_IMPORT where REMOVED=0
+	</select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="bidImportMap">
+        select * from TT_BIDDING_IMPORT  where BIDDING_ID=#{id}
+    </select>
+    
+    <select id="selectByMainId" parameterType="java.lang.String" resultMap="bidImportMap">
+        select * from TT_BIDDING_IMPORT  where MAIN_ID=#{mainId}  and REMOVED=0
+    </select>
+
+</mapper>

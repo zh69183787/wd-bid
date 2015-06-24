@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BiddingDao">
+    <resultMap type="Bidding" id="biddingMap">
+        <id property="biddingId" column="BIDDING_ID"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+        <result property="biddingType" column="BIDDING_TYPE"/>
+        <result property="biddingTypeId" column="BIDDING_TYPE_ID"/>
+        <result property="routeId" column="ROUTE_ID"/>
+        <result property="color" column="COLOR"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <result property="planNum" column="NUM_"/>
+        <result property="bidType" column="BID_TYPE"/>
+        <result property="biddingNo" column="BIDDING_NO"/>
+        <result property="appraiseDate" column="APPRAISE_DATE"/>
+        <result property="fileEndDate" column="FILE_END_DATE"/>
+        <result property="serialNo" column="SERIAL_NO"/>
+        <result property="bidState" column="BID_STATE"/>
+        <result property="isCompleted" column="IS_COMPLETED"/>
+        <result property="completeDate" column="COMPLETE_DATE"/>
+
+        <association property="route" javaType="Route">
+            <id property="routeId" column="ROUTE_ID"/>
+            <result property="routeName" column="ROUTE_NAME"/>
+            <result property="routeType" column="ROUTE_TYPE"/>
+            <result property="company" column="COMPANY"/>
+            <result property="createTime" column="CREATE_TIME"/>
+            <result property="updateTime" column="UPDATE_TIME"/>
+            <result property="creator" column="CREATOR"/>
+            <result property="updater" column="UPDATER"/>
+            <result property="removed" column="REMOVED"/>
+        </association>
+    </resultMap>
+    <resultMap type="Bidding" id="biddingIdNameMap">
+        <id property="biddingId" column="BIDDING_ID"/>
+        <result property="biddingName" column="BIDDING_NAME"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.wonders.stpt.bid.domain.Bidding" keyProperty="biddingId"
+            keyColumn="BIDDING_ID" useGeneratedKeys="true">
+		insert into TT_BIDDING(
+        BIDDING_ID,
+        BIDDING_NAME,
+        BIDDING_TYPE,
+        BIDDING_TYPE_ID,
+        ROUTE_ID,
+        BID_TYPE,
+        BIDDING_NO,
+        APPRAISE_DATE,
+        FILE_END_DATE,
+        SERIAL_NO,
+        BID_STATE,
+        IS_COMPLETED,
+        COMPLETE_DATE,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+		) values(
+        SYS_GUID(),
+			#{biddingName,jdbcType=VARCHAR},
+			#{biddingType,jdbcType=VARCHAR},
+			#{biddingTypeId,jdbcType=VARCHAR},
+			#{routeId,jdbcType=VARCHAR},
+
+			#{bidType,jdbcType=VARCHAR},
+			#{biddingNo,jdbcType=VARCHAR},
+			#{appraiseDate,jdbcType=DATE},
+			#{fileEndDate,jdbcType=DATE},
+
+           (select max(to_number(nvl(SERIAL_NO,'0')))+1 from TT_BIDDING B where  B.ROUTE_ID=#{routeId,jdbcType=VARCHAR}),
+           #{bidState,jdbcType=VARCHAR},
+			#{isCompleted,jdbcType=VARCHAR},
+			#{completeDate,jdbcType=DATE},
+			#{createTime,jdbcType=DATE},
+			sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+			#{removed,jdbcType=CHAR}
+		)
+	</insert>
+    <update id="update" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        update TT_BIDDING
+        <set>
+            <if test="biddingName != null and biddingName != '' ">BIDDING_NAME=#{biddingName,jdbcType=VARCHAR},</if>
+            <if test="biddingType != null and biddingType != '' ">BIDDING_TYPE=#{biddingType,jdbcType=VARCHAR},</if>
+            <if test="biddingTypeId != null and biddingTypeId != '' ">
+                BIDDING_TYPE_ID=#{biddingTypeId,jdbcType=VARCHAR},
+            </if>
+            <if test="routeId !=null and routeId !='' ">ROUTE_ID=#{routeId,jdbcType=VARCHAR},</if>
+            <if test="updater != null and updater != ''">UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != ''">REMOVED=#{removed,jdbcType=CHAR},</if>
+            <if test="bidType != null and bidType != '' ">BID_TYPE=#{bidType,jdbcType=VARCHAR},</if>
+            <if test="biddingNo != null and biddingNo != '' ">BIDDING_NO=#{biddingNo,jdbcType=VARCHAR},</if>
+            <if test="appraiseDate != null and appraiseDate != '' ">APPRAISE_DATE=#{appraiseDate,jdbcType=DATE},</if>
+            <if test="fileEndDate != null and fileEndDate != '' ">FILE_END_DATE=#{fileEndDate,jdbcType=DATE},</if>
+
+            <if test="bidState != null and bidState != '' ">BID_STATE=#{bidState,jdbcType=VARCHAR},</if>
+            <if test="isCompleted != null and isCompleted != '' ">IS_COMPLETED=#{isCompleted,jdbcType=VARCHAR},</if>
+            <if test="completeDate != null and completeDate != '' ">COMPLETE_DATE=#{completeDate,jdbcType=DATE},</if>
+            <if test="createTime != null and createTime != '' ">CREATE_TIME=#{createTime,jdbcType=DATE},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            BIDDING_ID=#{biddingId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BIDDING where BIDDING_ID=#{id}
+    </delete>
+
+    <select id="selectIdNameWithoutSelf" resultMap="biddingMap" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        SELECT BIDDING_ID,BIDDING_NAME,NVL(BIDDING_NO,' ') BIDDING_NO,ROUTE_NAME
+        FROM TT_BIDDING B,TT_BID_ROUTE R
+        WHERE R.ROUTE_ID=B.ROUTE_ID AND BIDDING_ID != #{bidding.biddingId,jdbcType=VARCHAR}
+        and B.REMOVED='0' and BID_STATE = '1'
+        <if test="bidding.biddingName!=null and  bidding.biddingName!=''">
+            and BIDDING_NAME like '%'||'${bidding.biddingName}'||'%'
+        </if>
+        <if test="bidding.biddingNo!=null and  bidding.biddingNo!=''">
+            and BIDDING_NO=#{bidding.biddingNo}
+        </if>
+        <if test="bidding.routeId!=null and bidding.routeId!=''">
+            and B.ROUTE_ID=#{bidding.routeId}
+        </if>
+    </select>
+
+    <select id="countBiddingId" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM TT_EXECUTE_PLAN_RELATION EP, TT_BID_PLAN P  WHERE P.BIDDING_PLAN_ID = EP.EXECUTE_ID AND EP.PLAN_ID = #{biddingId}  AND P.REMOVED = '0' AND P.BID_TYPE='2'
+    </select>
+
+
+    <select id="select" resultMap="biddingMap" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        SELECT
+        BIDDING_ID,BIDDING_NAME,BIDDING_TYPE,BIDDING_TYPE_ID,b.ROUTE_ID,ROUTE_NAME,b.CREATOR,b.UPDATER,b.BID_TYPE,B.BIDDING_NO,B.SERIAL_NO,B.APPRAISE_DATE,B.FILE_END_DATE,
+        BID_STATE,
+        CASE
+        WHEN B.COMPLETE_DATE &lt; TRUNC(SYSDATE, 'month') THEN
+        '#FF8F59'
+        WHEN TRUNC(B.APPRAISE_DATE, 'month') = TRUNC(SYSDATE, 'month') THEN
+        '#9F35FF'
+        WHEN TRUNC(B.COMPLETE_DATE, 'month') = TRUNC(SYSDATE, 'month') OR
+        (SELECT COUNT(1)
+        FROM TT_BID_CHANGE C
+        WHERE C.BIDDING_ID = B.BIDDING_ID
+        AND C.REMOVED = '0'
+        AND TRUNC(C.CREATE_TIME, 'month') =
+        TRUNC(SYSDATE, 'month')) > 0 THEN
+        '#009100'
+        WHEN TRUNC(B.CREATE_TIME, 'month') = TRUNC(SYSDATE, 'month') THEN
+        '#004B97'
+        END COLOR,
+        IS_COMPLETED,R.COMPANY,
+        COMPLETE_DATE,B.CREATE_TIME,B.UPDATE_TIME,
+        (SELECT COUNT(1) FROM TT_BID_PLAN P,TT_EXECUTE_PLAN_RELATION PR WHERE P.BIDDING_PLAN_ID = PR.EXECUTE_ID AND B.BIDDING_ID = PR.PLAN_ID ) NUM_
+        FROM
+        TT_BIDDING b,TT_BID_ROUTE r WHERE b.ROUTE_ID=r.ROUTE_ID and b.REMOVED=0
+        <if test='bidding.isExculdeRepeatedInExecutePlan!=null and  bidding.isExculdeRepeatedInExecutePlan!=""'>
+            AND NOT EXISTS (SELECT 1 FROM TT_EXECUTE_PLAN_RELATION EP, TT_BID_PLAN P WHERE P.BIDDING_PLAN_ID =
+            EP.EXECUTE_ID AND B.BIDDING_ID = EP.PLAN_ID AND P.REMOVED = '0' AND BID_TYPE='2'
+            <if test='bidding.isExculdeRepeatedInExecutePlan!="1"'>
+                AND EP.EXECUTE_ID != #{bidding.isExculdeRepeatedInExecutePlan}
+            </if>
+            )
+        </if>
+        <if test="bidding.biddingName!=null and  bidding.biddingName!=''">
+
+            and BIDDING_NAME like '%'||'${bidding.biddingName}'||'%'
+
+        </if>
+        <if test="bidding.routeId!=null and bidding.routeId!=''">
+            and b.ROUTE_ID=#{bidding.routeId}
+        </if>
+        <if test="bidding.route!=null and bidding.route.creator!=null and bidding.route.creator!=''">
+            and R.CREATOR=#{bidding.route.creator}
+        </if>
+        <if test="bidding.biddingType!=null and bidding.biddingType!=''and bidding.biddingTypeId==5">
+            and b.BIDDING_TYPE=#{bidding.biddingType,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.biddingTypeId!=null and bidding.biddingTypeId!=''">
+            and b.BIDDING_TYPE_ID like '${bidding.biddingTypeId}'||'%'
+        </if>
+        <if test="bidding.removed!=null and bidding.removed!=''">
+            and b.REMOVED=#{bidding.removed,jdbcType=CHAR}
+        </if>
+        <if test="bidding.creator!=null and bidding.creator!=''">
+            and b.CREATOR=#{bidding.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.updater!=null and bidding.updater!=''">
+            and b.UPDATER=#{bidding.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.createTimeBegin!=null and bidding.createTimeBegin!=''">
+            and b.CREATE_TIME >= #{bidding.createTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.createTimeEnd!=null and bidding.createTimeEnd!=''">
+            and b.CREATE_TIME &lt;= #{bidding.createTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.updateTimeBegin!=null and bidding.updateTimeBegin!=''">
+            and b.UPDATE_TIME >= #{bidding.updateTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.updateTimeEnd!=null and bidding.updateTimeEnd!=''">
+            and b.UPDATE_TIME &lt;= #{bidding.updateTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.completeDateBegin!=null and bidding.completeDateBegin!=''">
+            and b.COMPLETE_DATE >= #{bidding.completeDateBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.completeDateEnd!=null and bidding.completeDateEnd!=''">
+            and b.COMPLETE_DATE &lt;= #{bidding.completeDateEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.appraiseDateBegin!=null and bidding.appraiseDateBegin!=''">
+            and b.APPRAISE_DATE >= #{bidding.appraiseDateBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.appraiseDateEnd!=null and bidding.appraiseDateEnd!=''">
+            and b.APPRAISE_DATE &lt;= #{bidding.appraiseDateEnd,jdbcType=DATE}
+        </if>
+
+        <if test="bidding.bidType != null and bidding.bidType != '' ">and
+            b.BID_TYPE=#{bidding.bidType,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.biddingNo != null and bidding.biddingNo != '' ">and b.BIDDING_NO like
+            '%'||'${bidding.biddingNo}'||'%'
+        </if>
+        <if test="bidding.appraiseDate != null and bidding.appraiseDate != '' ">and
+            b.APPRAISE_DATE=#{bidding.appraiseDate,jdbcType=DATE}
+        </if>
+        <if test="bidding.fileEndDate != null and bidding.fileEndDate != '' ">and
+            b.FILE_END_DATE=#{bidding.fileEndDate,jdbcType=DATE},
+        </if>
+        <if test="bidding.serialNo != null and bidding.serialNo != '' ">and
+            b.SERIAL_NO=#{bidding.serialNo,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.bidState != null and bidding.bidState != '' ">and
+            b.BID_STATE=#{bidding.bidState,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.isCompleted != null and bidding.isCompleted != '' ">and
+            b.IS_COMPLETED=#{bidding.isCompleted,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.completeDate != null and bidding.completeDate != '' ">and
+            b.COMPLETE_DATE=#{bidding.completeDate,jdbcType=DATE}
+        </if>
+        <if test="bidding.sortBy == null">ORDER BY b.UPDATE_TIME DESC,ROUTE_NAME</if>
+        <if test="bidding.sortBy != null and bidding.sortBy == 'SERIAL_NO'">ORDER BY TRANSLATE
+            (ROUTE_NAME,'一二三四五六七八九十','abcdefghij'),TO_NUMBER(NVL(SERIAL_NO,10000))
+        </if>
+        <if test="bidding.sortBy != null and bidding.sortBy == 'CHOOSE_BIDDING'">ORDER BY TRANSLATE
+            (ROUTE_NAME,'一二三四五六七八九十','abcdefghij'),B.BIDDING_NAME,B.BIDDING_NO
+        </if>
+
+    </select>
+
+
+    <!-- 模糊匹配 -->
+    <select id="selectfuzzy" resultMap="biddingMap" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        SELECT
+        BIDDING_ID,BIDDING_NAME,BIDDING_TYPE,BIDDING_TYPE_ID,b.ROUTE_ID,ROUTE_NAME,b.CREATOR,b.UPDATER,b.BID_TYPE,B.BIDDING_NO,B.SERIAL_NO,B.APPRAISE_DATE,B.FILE_END_DATE,BID_STATE,B.CREATE_TIME,B.UPDATE_TIME,
+        IS_COMPLETED,
+        COMPLETE_DATE FROM
+        TT_BIDDING b,TT_BID_ROUTE r WHERE b.ROUTE_ID=r.ROUTE_ID and b.REMOVED=0
+
+        <if test="bidding.biddingName!=null and  bidding.biddingName!=''">
+
+            <!-- and	 BIDDING_NAME like '%'||'${bidding.biddingName}'||'%' -->
+            and BIDDING_NAME like '%'||'${bidding.biddingName}'||'%'
+        </if>
+        <if test="bidding.routeId!=null and bidding.routeId!=''">
+            and b.ROUTE_ID=#{bidding.routeId}
+        </if>
+        <if test="bidding.biddingType!=null and bidding.biddingType!=''">
+            and BIDDING_TYPE=#{bidding.biddingType,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.removed!=null and bidding.removed!=''">
+            and REMOVED=#{bidding.removed,jdbcType=CHAR}
+        </if>
+        <if test="bidding.creator!=null and bidding.creator!=''">
+            and CREATOR=#{route.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.updater!=null and bidding.updater!=''">
+            and UPDATER=#{route.updater,jdbcType=VARCHAR}
+        </if>
+
+        and BID_STATE='1'
+        ORDER BY b.UPDATE_TIME DESC, b.BIDDING_NAME
+    </select>
+
+    <!-- ? -->
+    <select id="selectAll" resultMap="biddingMap">
+		select * from TT_BIDDING where REMOVED=0
+	</select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="biddingMap">
+        select t.*,r.ROUTE_ID,r.ROUTE_NAME from TT_BIDDING t left join TT_BID_ROUTE r on t.ROUTE_ID=r.ROUTE_ID  where t.BIDDING_ID=#{id}
+    </select>
+
+
+    <select id="selectByBiddingIds" resultMap="biddingMap">
+        SELECT * FROM TT_BIDDING WHERE REMOVED='0'
+
+        <if test="biddingIdList!=null">
+            and BIDDING_ID IN
+            <foreach item="item" index="index" collection="biddingIdList"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        ORDER BY UPDATE_TIME DESC;
+    </select>
+    <select id="selectByMainIdIsDels" resultMap="biddingMap" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        SELECT
+        BIDDING_ID,BIDDING_NAME,BIDDING_TYPE,BIDDING_TYPE_ID,b.ROUTE_ID,ROUTE_NAME,b.CREATOR,b.UPDATER,b.BID_TYPE,B.BIDDING_NO,B.SERIAL_NO,B.APPRAISE_DATE,B.FILE_END_DATE,
+        BID_STATE,
+        IS_COMPLETED,
+        COMPLETE_DATE,B.CREATE_TIME,B.UPDATE_TIME FROM
+        TT_BIDDING b,TT_BID_ROUTE r WHERE b.ROUTE_ID=r.ROUTE_ID and b.REMOVED=0
+
+        <if test="mainId!=null and  mainId!=''">
+            and b.bidding_id not in
+            (select t.ubidding_id
+            from tt_bidding_import t
+            where t.main_id = #{mainId,jdbcType=VARCHAR}
+            and t.ubidding_id is not null)
+        </if>
+
+        <if test="bidding.biddingName!=null and  bidding.biddingName!=''">
+
+            and BIDDING_NAME like '%'||'${bidding.biddingName}'||'%'
+
+        </if>
+        <if test="bidding.routeId!=null and bidding.routeId!=''">
+            and b.ROUTE_ID=#{bidding.routeId}
+        </if>
+        <if test="bidding.route!=null and bidding.route.creator!=null and bidding.route.creator!=''">
+            and R.CREATOR=#{bidding.route.creator}
+        </if>
+        <if test="bidding.biddingType!=null and bidding.biddingType!=''">
+            and b.BIDDING_TYPE=#{bidding.biddingType,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.biddingTypeId!=null and bidding.biddingTypeId!=''">
+            and b.BIDDING_TYPE_ID like '${bidding.biddingTypeId}'||'%'
+        </if>
+        <if test="bidding.removed!=null and bidding.removed!=''">
+            and b.REMOVED=#{bidding.removed,jdbcType=CHAR}
+        </if>
+        <if test="bidding.creator!=null and bidding.creator!=''">
+            and b.CREATOR=#{bidding.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.updater!=null and bidding.updater!=''">
+            and b.UPDATER=#{bidding.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.createTimeBegin!=null and bidding.createTimeBegin!=''">
+            and b.CREATE_TIME >= #{bidding.createTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.createTimeEnd!=null and bidding.createTimeEnd!=''">
+            and b.CREATE_TIME &lt;= #{bidding.createTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.updateTimeBegin!=null and bidding.updateTimeBegin!=''">
+            and b.UPDATE_TIME >= #{bidding.updateTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.updateTimeEnd!=null and bidding.updateTimeEnd!=''">
+            and b.UPDATE_TIME &lt;= #{bidding.updateTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.completeDateBegin!=null and bidding.completeDateBegin!=''">
+            and b.COMPLETE_DATE >= #{bidding.completeDateBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.completeDateEnd!=null and bidding.completeDateEnd!=''">
+            and b.COMPLETE_DATE &lt;= #{bidding.completeDateEnd,jdbcType=DATE}
+        </if>
+        <if test="bidding.appraiseDateBegin!=null and bidding.appraiseDateBegin!=''">
+            and b.APPRAISE_DATE >= #{bidding.appraiseDateBegin,jdbcType=DATE}
+        </if>
+        <if test="bidding.appraiseDateEnd!=null and bidding.appraiseDateEnd!=''">
+            and b.APPRAISE_DATE &lt;= #{bidding.appraiseDateEnd,jdbcType=DATE}
+        </if>
+
+        <if test="bidding.bidType != null and bidding.bidType != '' ">and
+            b.BID_TYPE=#{bidding.bidType,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.biddingNo != null and bidding.biddingNo != '' ">and
+            b.BIDDING_NO=#{bidding.biddingNo,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.appraiseDate != null and bidding.appraiseDate != '' ">and
+            b.APPRAISE_DATE=#{bidding.appraiseDate,jdbcType=DATE}
+        </if>
+        <if test="bidding.fileEndDate != null and bidding.fileEndDate != '' ">and
+            b.FILE_END_DATE=#{bidding.fileEndDate,jdbcType=DATE},
+        </if>
+        <if test="bidding.serialNo != null and bidding.serialNo != '' ">and
+            b.SERIAL_NO=#{bidding.serialNo,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.bidState != null and bidding.bidState != '' ">and
+            b.BID_STATE=#{bidding.bidState,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.isCompleted != null and bidding.isCompleted != '' ">and
+            b.IS_COMPLETED=#{bidding.isCompleted,jdbcType=VARCHAR}
+        </if>
+        <if test="bidding.completeDate != null and bidding.completeDate != '' ">and
+            b.COMPLETE_DATE=#{bidding.completeDate,jdbcType=DATE}
+        </if>
+        <if test="bidding.sortBy == null">ORDER BY b.UPDATE_TIME DESC,ROUTE_NAME</if>
+        <if test="bidding.sortBy != null and bidding.sortBy == 'SERIAL_NO'">ORDER BY TRANSLATE
+            (ROUTE_NAME,'一二三四五六七八九十','abcdefghij'),TO_NUMBER(NVL(SERIAL_NO,10000))
+        </if>
+
+    </select>
+    
+    
+    <resultMap type="java.util.HashMap" id="seasonMap">
+        <result property="countnum" column="COUNTNUM"/>
+        <result property="season" column="SEASON"/>
+        <result property="btype" column="BTYPE"/>
+    </resultMap>
+    
+	<select id="countForSeason" parameterType="java.lang.String" resultMap="seasonMap">
+		select COUNT(T.BIDDING_ID) COUNTNUM,TO_CHAR(t.appraise_date,'q') SEASON,substr(t.bidding_type_id,0,1) BTYPE
+		from TT_BIDDING t 
+		where t.appraise_date is not null and t.bidding_type_id is not null
+		 <if test="year != null and year != ''">
+		 and TO_CHAR(t.appraise_date,'yyyy') = #{year,jdbcType=VARCHAR}
+		 </if>
+		and t.removed='0' 
+		and t.bid_state='1' 
+		GROUP BY TO_CHAR(t.appraise_date,'q'),substr(t.bidding_type_id,0,1)
+	</select>
+   
+   
+  	<resultMap type="java.util.HashMap" id="routeReportMap">
+        <result property="countnum" column="COUNTNUM"/>
+        <result property="routeid" column="RID"/>
+        <result property="rname" column="RNAME"/>
+        <result property="btype" column="BTYPE"/>
+    </resultMap>
+        
+	<select id="countForRoute" parameterType="java.lang.String" resultMap="routeReportMap">
+		select COUNT(T.BIDDING_ID) COUNTNUM,t.route_id RID,r.route_name RNAME,substr(t.bidding_type_id,0,1) BTYPE
+		from TT_BIDDING t ,tt_bid_route r
+		where t.route_id is not null and t.bidding_type_id is not null 
+		and t.appraise_date is not null
+		 and t.route_id=r.route_id
+		<if test="year != null and year != ''">
+		 and TO_CHAR(t.appraise_date,'yyyy') = #{year,jdbcType=VARCHAR}
+		 </if>
+		
+		  and t.removed='0' 
+		 and t.bid_state='1'  
+		GROUP BY r.route_name,t.route_id,substr(t.bidding_type_id,0,1)   
+		order by r.route_name asc,BTYPE asc
+	</select>
+
+
+ 
+
+
+    <update id="updateCompleteTimeNull" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        update TT_BIDDING BIDDING
+        SET IS_COMPLETED = '2', COMPLETE_DATE = NULL
+        WHERE EXISTS (SELECT 1
+        FROM TT_BID_PLAN P, TT_BID_RESULT BR, TT_BIDDING B
+        WHERE BR.BIDDING_PLAN_ID = P.BIDDING_PLAN_ID
+        AND B.BIDDING_ID = BR.BIDDING_ID
+        AND BR.UPDATE_TIME >= TRUNC(SYSDATE, 'DD')
+        AND BR.UPDATE_TIME &lt; TRUNC(SYSDATE, 'DD')-1 AND BIDDING.BIDDING_ID=BR.BIDDING_ID)
+    </update>
+
+    <update id="updateCompleteTime" parameterType="com.wonders.stpt.bid.domain.Bidding">
+        update TT_BIDDING B
+        SET (IS_COMPLETED, COMPLETE_DATE) =
+        (SELECT IS_COMPLETED, COMPLETE_DATE
+        FROM (SELECT DISTINCT '1' IS_COMPLETED,
+        CASE
+        WHEN P.TEC_OPEN_DATE > P.BIZ_APPRAISE_DATE AND
+        P.TEC_OPEN_DATE > P.TEC_APPRAISE_DATE THEN
+        P.TEC_OPEN_DATE
+        WHEN P.BIZ_APPRAISE_DATE > P.TEC_OPEN_DATE AND
+        P.BIZ_APPRAISE_DATE >
+        P.TEC_APPRAISE_DATE THEN
+        P.BIZ_APPRAISE_DATE
+        ELSE
+        P.TEC_APPRAISE_DATE
+        END COMPLETE_DATE,
+        BR.BIDDING_ID
+        FROM TT_BID_PLAN P, TT_BID_RESULT BR
+        WHERE BR.BIDDING_PLAN_ID = P.BIDDING_PLAN_ID
+        AND BR.FINAL_PRICE > 0
+        AND BR.REMOVED = '0' AND BR.UPDATE_TIME >= TRUNC(SYSDATE,'DD')-1 AND BR.UPDATE_TIME &lt;TRUNC(SYSDATE,'DD'))
+        WHERE BIDDING_ID = B.BIDDING_ID)
+
+        WHERE EXISTS
+        (SELECT 1
+        FROM (SELECT DISTINCT '1' IS_COMPLETED,
+        CASE
+        WHEN P.TEC_OPEN_DATE > P.BIZ_APPRAISE_DATE AND
+        P.TEC_OPEN_DATE > P.TEC_APPRAISE_DATE THEN
+        P.TEC_OPEN_DATE
+        WHEN P.BIZ_APPRAISE_DATE > P.TEC_OPEN_DATE AND
+        P.BIZ_APPRAISE_DATE >
+        P.TEC_APPRAISE_DATE THEN
+        P.BIZ_APPRAISE_DATE
+        ELSE
+        P.TEC_APPRAISE_DATE
+        END COMPLETE_DATE,
+        BR.BIDDING_ID
+        FROM TT_BID_PLAN P, TT_BID_RESULT BR
+        WHERE BR.BIDDING_PLAN_ID = P.BIDDING_PLAN_ID
+        AND BR.FINAL_PRICE > 0
+        AND BR.REMOVED = '0' AND BR.UPDATE_TIME >= TRUNC(SYSDATE,'DD')-1 AND BR.UPDATE_TIME &lt;TRUNC(SYSDATE,'DD'))
+        WHERE BIDDING_ID = B.BIDDING_ID)
+    </update>
+</mapper>

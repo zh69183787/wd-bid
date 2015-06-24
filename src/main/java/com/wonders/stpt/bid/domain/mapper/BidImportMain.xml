@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.BidImportMainDao">
+    <resultMap type="BidImportMain" id="bidImportMainMap">
+        <id property="mainId" column="MAIN_ID"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+
+        <result property="serialNo" column="SERIAL_NO"/>
+        <result property="isUpdate" column="IS_UPDATE"/>
+        <result property="belongDate" column="BELONG_DATE"/>
+        <result property="filePath" column="FILE_PATH"/>
+        <result property="fileGroup" column="FILE_GROUP"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        
+        <association property="dictCompany" javaType="com.wonders.stpt.bid.domain.Dictionary">
+          	<id property="dictId" column="DICT_ID"/>
+	        <id property="dictNo" column="DICT_NO"/>
+	        <id property="dictName" column="DICT_NAME"/>
+	        <id property="dictType" column="DICT_TYPE"/>
+	        <id property="dictOrder" column="DICT_ORDER"/>
+	        <result property="dictCode" column="DICT_CODE"/>
+	        <result property="dictFullName" column="DICT_FULL_NAME"/>
+	        <result property="dictFullCode" column="DICT_FULL_CODE"/>
+	        <result property="parentNo" column="PARENT_NO"/>
+	        <result property="createTime" column="CREATE_TIME"/>
+	        <result property="updateTime" column="UPDATE_TIME"/>
+	        <result property="creator" column="CREATOR"/>
+	        <result property="updater" column="UPDATER"/>
+	        <result property="removed" column="REMOVED"/>
+        </association>
+        
+        <association property="attachment" javaType="com.wonders.stpt.bid.domain.Attachment">
+	        <id property="attachmentId" column="ATTACHMENT_ID"/>
+	        <result property="attachName" column="ATTACH_NAME"/>
+	        <result property="attachSize" column="ATTACH_SIZE"/>
+	        <result property="attachExtName" column="ATTACH_EXT_NAME"/>
+	        <result property="attachType" column="ATTACH_TYPE"/>
+	        <result property="objectId" column="OBJECT_ID"/>
+	        <result property="attachUrl" column="ATTACH_URL"/>
+	
+	        <result property="creator" column="CREATOR"/>
+	        <result property="createTime" column="CREATE_TIME"/>
+	        <result property="updater" column="UPDATER"/>
+	        <result property="updateTime" column="UPDATE_TIME"/>
+	        <result property="removed" column="REMOVED"/>
+        </association>
+        
+        
+<!--         IS_UPDATE	CHAR(1)	Y			是否已经更新0 未更新1 已更新
+BELONG_DATE	DATE	Y			所属年月
+FILE_PATH	VARCHAR2(500)	Y			上传导入文件路径
+FILE_GROUP	VARCHAR2(32)	Y			附件群组
+FILE_NAME	VARCHAR2(200)	Y			上传导入文件名
+COMPANY	VARCHAR2(32)	Y			上报单位 -->
+        
+
+    </resultMap>
+
+    <insert id="insert" parameterType="com.wonders.stpt.bid.domain.BidImportMain">
+		insert into TT_BIDDING_IMPORT_MAIN(
+        MAIN_ID,
+        SERIAL_NO,
+        IS_UPDATE,
+        BELONG_DATE,
+        FILE_PATH,
+        FILE_GROUP,
+        FILE_NAME,
+        COMPANY_ID,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+		) values(
+        SYS_GUID(),
+        (select max(to_number(nvl(SERIAL_NO,'0')))+1 from TT_BIDDING_IMPORT_MAIN B ),
+			#{isUpdate,jdbcType=CHAR},
+			#{belongDate,jdbcType=DATE},
+			#{filePath,jdbcType=VARCHAR},
+			#{fileGroup,jdbcType=VARCHAR},
+			#{fileName,jdbcType=VARCHAR},
+			#{companyId,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+			#{removed,jdbcType=CHAR}
+		)
+	</insert>
+	<insert id="insertWithMainId" parameterType="com.wonders.stpt.bid.domain.BidImportMain">
+		insert into TT_BIDDING_IMPORT_MAIN(
+        MAIN_ID,
+        SERIAL_NO,
+        IS_UPDATE,
+        BELONG_DATE,
+        FILE_PATH,
+        FILE_GROUP,
+        FILE_NAME,
+        COMPANY_ID,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+		) values(
+        #{mainId,jdbcType=CHAR},
+        (select max(to_number(nvl(SERIAL_NO,'0')))+1 from TT_BIDDING_IMPORT_MAIN B ),
+			#{isUpdate,jdbcType=CHAR},
+			#{belongDate,jdbcType=DATE},
+			#{filePath,jdbcType=VARCHAR},
+			#{fileGroup,jdbcType=VARCHAR},
+			#{fileName,jdbcType=VARCHAR},
+			#{companyId,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+			#{removed,jdbcType=CHAR}
+		)
+	</insert>
+    <update id="update" parameterType="com.wonders.stpt.bid.domain.BidImportMain">
+        update TT_BIDDING_IMPORT_MAIN
+        <set>
+            <if test="isUpdate != null and isUpdate != '' ">IS_UPDATE=#{isUpdate,jdbcType=CHAR},</if>
+            <if test="belongDate != null and belongDate != '' ">BELONG_DATE=#{belongDate,jdbcType=DATE},</if>
+                FILE_PATH=#{filePath,jdbcType=VARCHAR},
+            <if test="fileGroup !=null and fileGroup !='' ">FILE_GROUP=#{fileGroup,jdbcType=VARCHAR},</if>
+            FILE_NAME=#{fileName,jdbcType=VARCHAR},
+            <if test="companyId != null and companyId != ''">COMPANY_ID=#{companyId,jdbcType=VARCHAR},</if>
+            <if test="updater != null and updater != ''">UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="removed != null and removed != ''">REMOVED=#{removed,jdbcType=CHAR},</if>
+           
+            <if test="createTime != null and createTime != '' ">CREATE_TIME=#{createTime,jdbcType=DATE},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            MAIN_ID=#{mainId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BIDDING_IMPORT_MAIN where MAIN_ID=#{id}
+    </delete>
+
+
+    <select id="select" resultMap="bidImportMainMap" parameterType="com.wonders.stpt.bid.domain.BidImportMain">
+        SELECT 
+        MAIN_ID,
+        SERIAL_NO,
+        IS_UPDATE,
+        BELONG_DATE,
+        FILE_PATH,
+        FILE_GROUP,
+        FILE_NAME,
+        a.ATTACH_NAME,
+        b.COMPANY_ID,
+        r.DICT_NAME,
+        r.DICT_ID,
+        b.CREATE_TIME,
+        b.UPDATE_TIME,
+        b.CREATOR,
+        b.UPDATER,
+        b.REMOVED
+        FROM
+        TT_BIDDING_IMPORT_MAIN b 
+        left join TT_BID_ATTACHMENT a on a.ATTACHMENT_ID=b.FILE_PATH and a.REMOVED='1'
+		left join TT_BID_DICTIONARY r   on b.COMPANY_ID=r.DICT_ID where b.MAIN_ID is not null
+
+        <if test="bidImportMain.fileName!=null and  bidImportMain.fileName!=''">
+            and FILE_NAME like '%'||'${bidImportMain.fileName}'||'%'
+        </if>
+        <if test="bidImportMain.companyId!=null and bidImportMain.companyId!=''">
+            and b.COMPANY_ID=#{bidImportMain.companyId}
+        </if>
+        
+        <if test="bidImportMain.creator!=null and bidImportMain.creator!=''">
+            and b.CREATOR=#{bidImportMain.creator}
+        </if>
+        
+        <if test="bidImportMain.removed!=null and bidImportMain.removed!=''">
+            and b.REMOVED=#{bidImportMain.removed,jdbcType=CHAR}
+        </if>
+        
+        <if test="bidImportMain.isUpdate != null and bidImportMain.isUpdate != '' ">
+        	<choose>
+        		<when test="bidImportMain.isUpdate == '-2' ">
+        			and b.IS_UPDATE != '0'
+        		</when>
+        		<otherwise>
+        			<choose>
+		        		<when test="bidImportMain.isUpdate == '-1' ">
+		        			and b.IS_UPDATE = '0'
+		        		</when>
+		        		<otherwise>
+		        			
+		        		</otherwise>
+		        	</choose>
+        		</otherwise>
+        	</choose>
+        </if>
+        
+       
+        <if test="bidImportMain.updater!=null and bidImportMain.updater!=''">
+            and b.UPDATER=#{bidImportMain.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="bidImportMain.createTimeBegin!=null and bidImportMain.createTimeBegin!=''">
+            and b.CREATE_TIME >= #{bidImportMain.createTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidImportMain.createTimeEnd!=null and bidImportMain.createTimeEnd!=''">
+            and b.CREATE_TIME &lt;= #{bidImportMain.createTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidImportMain.updateTimeBegin!=null and bidImportMain.updateTimeBegin!=''">
+            and b.UPDATE_TIME >= #{bidImportMain.updateTimeBegin,jdbcType=DATE}
+        </if>
+        <if test="bidImportMain.updateTimeEnd!=null and bidImportMain.updateTimeEnd!=''">
+            and b.UPDATE_TIME &lt;= #{bidImportMain.updateTimeEnd,jdbcType=DATE}
+        </if>
+        <if test="bidImportMain.belongDateBegin!=null and bidImportMain.belongDateBegin!=''">
+            and b.BELONG_DATE >= #{bidImportMain.belongDateBegin,jdbcType=DATE}
+        </if>
+        
+        <if test="bidImportMain.belongDateEnd!=null and bidImportMain.belongDateEnd!=''">
+            and b.BELONG_DATE &lt;= #{bidImportMain.belongDateEnd,jdbcType=DATE}
+        </if>
+
+        <if test="bidImportMain.serialNo != null and bidImportMain.serialNo != '' ">and b.SERIAL_NO=#{bidImportMain.serialNo,jdbcType=VARCHAR}</if>
+        <if test="bidImportMain.sortBy == null">ORDER BY b.UPDATE_TIME DESC</if>
+        <if test="bidImportMain.sortBy != null and bidImportMain.sortBy == 'SERIAL_NO'">ORDER BY MAIN_ID DESC,TO_NUMBER(NVL(SERIAL_NO,10000))</if>
+
+    </select>
+
+
+    
+    <!-- ? -->
+    <select id="selectAll" resultMap="bidImportMainMap">
+		select * from TT_BIDDING_IMPORT_MAIN b left join TT_BID_ATTACHMENT a on a.ATTACHMENT_ID=b.FILE_PATH and a.REMOVED='1'  where b.REMOVED=1
+	</select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="bidImportMainMap">
+        select * from TT_BIDDING_IMPORT_MAIN b 
+        	left join TT_BID_ATTACHMENT a on a.ATTACHMENT_ID=b.FILE_PATH and a.REMOVED='1'
+			left join TT_BID_DICTIONARY r on b.COMPANY_ID=r.DICT_ID   where  b.MAIN_ID=#{id}
+    </select>
+
+</mapper>

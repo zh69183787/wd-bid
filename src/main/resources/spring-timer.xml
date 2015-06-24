@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security.xsd">
+   	<description>
+		Spring Configuration of CCDC Application.
+	</description>
+	
+	<!-- 超时订单退单timer -->
+	<!--<bean id="outTimeOrderInfoInvokingJob"-->
+		<!--class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+		<!--<property name="targetObject">-->
+			<!--<ref bean="outTimeOrderJob" />-->
+		<!--</property>-->
+		<!--<property name="targetMethod">-->
+			<!--<value>check</value>-->
+		<!--</property>-->
+	<!--</bean>-->
+	<!--&lt;!&ndash; 指定定时器执行哪个方法的时间间隔 &ndash;&gt;-->
+	<!--<bean id="orderOutTimeCronTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">-->
+		<!--&lt;!&ndash;-->
+			<!--<bean id="orderStatusCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean"> -->
+			<!--<property name="cronExpression">-->
+				<!--<value>0/30 * * * * ?</value>-->
+			<!--</property>-->
+		 <!--&ndash;&gt;-->
+		<!--<property name="jobDetail" ref="outTimeOrderInfoInvokingJob" />   -->
+		<!--<property name="startDelay">   -->
+			<!--<value>60000</value>   -->
+		<!--</property>   -->
+		<!--<property name="repeatInterval">   -->
+			<!--<value>60000</value>   -->
+		<!--</property>  -->
+	<!--</bean>-->
+</beans>

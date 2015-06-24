@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.AttachmentDao">
+
+    <resultMap type="Attachment" id="attachmentMap" >
+        <id property="attachmentId" column="ATTACHMENT_ID"/>
+        <result property="attachName" column="ATTACH_NAME"/>
+        <result property="attachSize" column="ATTACH_SIZE"/>
+        <result property="attachExtName" column="ATTACH_EXT_NAME"/>
+        <result property="attachType" column="ATTACH_TYPE"/>
+        <result property="objectId" column="OBJECT_ID"/>
+        <result property="attachUrl" column="ATTACH_URL"/>
+
+        <result property="creator" column="CREATOR"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="removed" column="REMOVED"/>
+    </resultMap>
+
+
+    <sql id="commonFieldSql">
+        ATTACHMENT_ID,
+        ATTACH_NAME,
+        ATTACH_SIZE,
+        ATTACH_EXT_NAME,
+        ATTACH_TYPE,
+        OBJECT_ID,
+        ATTACH_URL,
+        CREATOR,
+        CREATE_TIME,
+        UPDATER,
+        UPDATE_TIME,
+        REMOVED
+    </sql>
+
+    <insert id="insert">
+        INSERT INTO TT_BID_ATTACHMENT (
+        <include refid="commonFieldSql"/>
+        )
+        values(
+        #{attachmentId,jdbcType=CHAR},
+        #{attachName,jdbcType=VARCHAR},
+        #{attachSize,jdbcType=VARCHAR},
+        #{attachExtName,jdbcType=VARCHAR},
+        #{attachType,jdbcType=VARCHAR},
+        #{objectId,jdbcType=VARCHAR},
+        #{attachUrl,jdbcType=VARCHAR},
+        #{creator,jdbcType=VARCHAR},
+        sysdate,
+        #{updater,jdbcType=VARCHAR},
+        sysdate,
+        '1'
+        )
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM TT_BID_ATTACHMENT WHERE ATTACHMENT_ID IN
+        <foreach item="item" index="index" collection="list"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="update">
+        UPDATE TT_BID_ATTACHMENT
+        <set>
+            <choose>
+                <when test="isDynamic == true">
+                    <if test="entity.attachName !=null and entity.attachName !='' ">ATTACH_NAME=#{entity.attachName,jdbcType=VARCHAR},</if>
+                    <if test="entity.attachSize !=null and entity.attachSize !='' ">ATTACH_SIZE=#{entity.attachSize,jdbcType=VARCHAR},</if>
+                    <if test="entity.attachExtName !=null and entity.attachExtName !='' ">ATTACH_EXT_NAME=#{entity.attachExtName,jdbcType=VARCHAR},</if>
+                    <if test="entity.attachType !=null and entity.attachType !='' ">ATTACH_TYPE=#{entity.attachType,jdbcType=VARCHAR},</if>
+                    <if test="entity.objectId !=null and entity.objectId !='' ">OBJECT_ID=#{entity.objectId,jdbcType=VARCHAR},</if>
+                    <if test="entity.attachUrl !=null and entity.attachUrl !='' "> ATTACH_URL=#{entity.attachUrl,jdbcType=VARCHAR},</if>
+                    <if test="entity.updater != null and entity.updater != ''" >UPDATER=#{entity.updater,jdbcType=VARCHAR},</if>
+                    <if test="entity.removed != null and entity.removed != ''" >REMOVED=#{entity.removed,jdbcType=VARCHAR},</if>
+                </when>
+                <otherwise>
+                    ATTACH_NAME=#{entity.attachName,jdbcType=VARCHAR},
+                    ATTACH_SIZE=#{entity.attachSize,jdbcType=VARCHAR},
+                    ATTACH_EXT_NAME=#{entity.attachExtName,jdbcType=VARCHAR},
+                    ATTACH_TYPE=#{entity.attachType,jdbcType=VARCHAR},
+                    OBJECT_ID=#{entity.objectId,jdbcType=VARCHAR},
+                    ATTACH_URL=#{entity.attachUrl,jdbcType=VARCHAR},
+                    UPDATER=#{entity.updater,jdbcType=VARCHAR},
+                    REMOVED=#{entity.removed,jdbcType=VARCHAR},
+                </otherwise>
+            </choose>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            ATTACHMENT_ID=#{entity.attachmentId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <select id="select" parameterType="com.wonders.stpt.bid.domain.Attachment" resultMap="attachmentMap">
+        SELECT <include refid="commonFieldSql"/> FROM TT_BID_ATTACHMENT
+        <where>
+            <if test="attachment.attachmentId!=null and attachment.attachmentId!=''">
+                AND ATTACHMENT_ID = #{attachment.attachmentId}
+            </if>
+            <if test="attachment.attachName!=null and attachment.attachName!=''">
+                AND ATTACH_NAME = #{attachment.attachName!=}
+            </if>
+            <if test="attachment.attachSize!=null and attachment.attachSize!=''">
+                AND ATTACH_SIZE = #{attachment.attachSize}
+            </if>
+            <if test="attachment.attachExtName!=null and attachment.attachExtName!=''">
+                AND ATTACH_EXT_NAME = #{attachment.attachExtName}
+            </if>
+            <if test="attachment.attachType!=null and attachment.attachType!=''">
+                AND ATTACH_TYPE = #{attachment.attachType}
+            </if>
+            <if test="attachment.objectId!=null and attachment.objectId!=''">
+                AND OBJECT_ID = #{attachment.objectId}
+            </if>
+            <if test="attachment.attachUrl!=null and attachment.attachUrl!=''">
+                AND ATTACH_URL = #{attachment.attachUrl}
+            </if>
+            <if test="attachment.creator!=null and attachment.creator!=''">
+                AND CREATOR = #{attachment.creator}
+            </if>
+            <if test="attachment.updater!=null and attachment.updater!=''">
+                AND UPDATER = #{attachment.updater}
+            </if>
+            <if test="attachment.removed!=null and attachment.removed!=''">
+                AND REMOVED = #{attachment.removed}
+            </if>
+        </where>
+        ORDER BY UPDATE_TIME DESC
+    </select>
+    
+     <select id="selectById" parameterType="java.lang.String" resultMap="attachmentMap">
+        select * from TT_BID_ATTACHMENT  where ATTACHMENT_ID=#{id} 
+    </select>
+
+</mapper>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wonders.stpt.bid.dao.RouteDao" >
+    <resultMap type="Route" id="routeMap">
+        <id property="routeId" column="ROUTE_ID"/>
+        <result property="routeName" column="ROUTE_NAME"/>
+        <result property="routeType" column="ROUTE_TYPE"/>
+        <result property="company" column="COMPANY"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="creator" column="CREATOR"/>
+        <result property="updater" column="UPDATER"/>
+        <result property="removed" column="REMOVED"/>
+        <association property="user" javaType="User" resultMap="com.wonders.stpt.bid.dao.UserDao.userMap">
+
+        </association>
+    </resultMap>
+    <insert id="insert" parameterType="Route">
+		insert into TT_BID_ROUTE(
+        ROUTE_ID,
+        ROUTE_NAME,
+        ROUTE_TYPE,
+        COMPANY,
+        CREATE_TIME,
+        UPDATE_TIME,
+        CREATOR,
+        UPDATER,
+        REMOVED
+		) values(
+        SYS_GUID(),
+			#{routeName,jdbcType=VARCHAR},
+			#{routeType,jdbcType=CHAR},
+            #{company,jdbcType=VARCHAR},
+			sysdate,
+			sysdate,
+			#{creator,jdbcType=VARCHAR},
+			#{updater,jdbcType=VARCHAR},
+			#{removed,jdbcType=CHAR}
+		)
+	</insert>
+    <update id="update" parameterType="Route">
+        update TT_BID_ROUTE
+        <set>
+            <if test="routeName != null and routeName != '' ">ROUTE_NAME=#{routeName,jdbcType=VARCHAR},</if>
+            <if test="routeType != null and routeType != '' ">ROUTE_TYPE=#{routeType,jdbcType=CHAR},</if>
+            <if test="company != null and company != '' ">COMPANY=#{company,jdbcType=CHAR},</if>
+            <if test="updater != null and updater != ''" >UPDATER=#{updater,jdbcType=VARCHAR},</if>
+            <if test="creator != null and creator != ''" >CREATOR=#{creator,jdbcType=VARCHAR},</if>
+        	<if test="removed != null and removed != ''" >REMOVED=#{removed,jdbcType=CHAR},</if>
+            UPDATE_TIME=sysdate
+        </set>
+        <where>
+            ROUTE_ID=#{routeId,jdbcType=VARCHAR}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        delete from TT_BID_ROUTE where ROUTE_ID=#{id}
+    </delete>
+
+
+    <select id="select" resultMap="routeMap" parameterType="Route">
+        SELECT ROUTE_ID,ROUTE_NAME,ROUTE_TYPE ROUTE_TYPE,COMPANY,CREATOR,UPDATER,USER_NAME  FROM TT_BID_ROUTE R LEFT JOIN TT_BID_USER U ON U.USER_ID = R.CREATOR WHERE 1=1 AND REMOVED=0
+
+        <if test="route.routeName!=null and  route.routeName!=''">
+
+            and	 ROUTE_NAME = #{route.routeName}
+        </if>
+        <if test="route.routeType!=null and route.routeType!=''">
+            and ROUTE_TYPE=#{route.routeType,jdbcType=CHAR}
+        </if>
+        <if test="route.routeType!=null and route.company!=''">
+            and COMPANY=#{route.company,jdbcType=VARCHAR}
+        </if>
+        <if test="route.routeId!=null and route.routeId!=''">
+            and ROUTE_ID=#{route.routeId,jdbcType=VARCHAR}
+        </if>
+        <if test="route.creator!=null and route.creator!=''">
+            and CREATOR=#{route.creator,jdbcType=VARCHAR}
+        </if>
+        <if test="route.updater!=null and route.updater!=''">
+            and UPDATER=#{route.updater,jdbcType=VARCHAR}
+        </if>
+        <if test="route.sortByRouteName!=null and route.sortByRouteName!=''">
+            ORDER BY TRANSLATE (ROUTE_NAME,'一二三四五六七八九十','abcdefghij')
+        </if>
+        <if test="route.sortByRouteName==null">
+            ORDER BY UPDATE_TIME DESC,TRANSLATE (ROUTE_NAME,'一二三四五六七八九十','abcdefghij') ASC;
+        </if>
+
+    </select>
+
+    <select id="selectAll" resultMap="routeMap">
+		select ROUTE_ID,ROUTE_NAME,ROUTE_TYPE,CREATOR,UPDATER from TT_BID_ROUTE where REMOVED=0 ;
+	
+	</select>
+
+    <select id="selectById" parameterType="java.lang.String" resultMap="routeMap">
+        select * from TT_BID_ROUTE  where ROUTE_ID=#{id}
+    </select>
+    
+    <select id="getRouteByName" parameterType="java.lang.String" resultMap="routeMap">
+        select * from TT_BID_ROUTE  where ROUTE_NAME=#{routeName} AND REMOVED=0 ;
+    </select>
+
+</mapper>  
